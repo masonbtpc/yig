@@ -6,22 +6,20 @@ function prepare_ceph(){
 
 function prepare_tidb(){
     docker cp yig.sql tidb:/yig.sql
-    docker exec tidb apt update
-    docker exec tidb apt install default-mysql-client -y
-	docker exec tidb mysql -e "create database yig character set utf8;"
-    docker exec tidb mysql -e "use yig;source /yig.sql;"
+    docker exec tidb apk update > /dev/null 2>&1
+    docker exec tidb apk add mysql-client > /dev/null 2>&1
 }
 
 function create_tidb(){
-	docker exec tidb mysql -P 4000 -e "create database yig character set utf8;"
-    docker exec tidb mysql -P 4000 -e "use yig;source /yig.sql;"
+	docker exec tidb mysql -P 4000 -h 127.0.0.1 -e "create database yig character set utf8;"
+    docker exec tidb mysql -P 4000 -h 127.0.0.1 -e "use yig;source /yig.sql;"
 }
 
 function prepare_cockroachdb() {
     docker cp yig_pg.sql cockroachdb:/cockroach/yig_pg.sql
 }
 
-function configure_cockroachdb() {
+function create_cockroachdb() {
     docker exec cockroachdb bash -c "cockroach sql --insecure --database="yig" < /cockroach/yig_pg.sql" > /dev/null 2>&1
 }
 

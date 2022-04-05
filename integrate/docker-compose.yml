@@ -27,19 +27,18 @@ services:
       vpcbr:
         ipv4_address: "10.5.0.8"
 
- cockroachdb:
-      image: cockroachdb/cockroach:v21.2.7
-      container_name: cockroachdb
-      networks:
-        vpcbr:
-          ipv4_address: "10.5.0.9"
-      ports:
-        - "26257:26257"
-        - "5432:5432"
-      volumes:
-        - ./data/cockroachdb:/cockroach/cockroach-data
-      command: start-single-node --insecure
-  
+  cockroachdb:
+        image: cockroachdb/cockroach:v21.2.7
+        container_name: cockroachdb
+        networks:
+          vpcbr:
+            ipv4_address: "10.5.0.9"
+        ports:
+          - "26257:26257"
+          - "5432:5432"
+        volumes:
+          - ./data/cockroachdb:/cockroach/cockroach-data
+        command: start-single-node --insecure
 
   tidb:
     image: pingcap/tidb:v2.1.1

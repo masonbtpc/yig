@@ -1,4 +1,4 @@
-package tidbclient_test
+package cockroachdb_test
 
 import (
 	"database/sql"

@@ -1,4 +1,4 @@
-package tidbclient
+package cockroachdb
 
 import (
 	. "github.com/journeymidnight/yig/meta/types"

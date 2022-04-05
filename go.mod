@@ -48,3 +48,5 @@ require (
 	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c // indirect
 	gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405
 )
+
+replace github.com/journeymidnight/yig => github.com/masonbtpc/yig master

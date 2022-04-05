@@ -7,7 +7,7 @@ import botocore
 
 
 def put_bucket_lifecycle(name, client):
-    print "bucketname:" + name
+    print("bucketname:" + name)
     client.put_bucket_lifecycle(Bucket=name+'hehe', LifecycleConfiguration={
                                                                 'Rules': [
                                                                     {
@@ -30,7 +30,7 @@ def do_lc(name, client):
 
 def get_bucket_lifecycle(name, client):
     response = client.get_bucket_lifecycle(Bucket=name+'hehe')
-    print 'lifecycle config: ', response
+    print('lifecycle config: ', response)
 
 def get_object(name, client):
     try:
@@ -40,9 +40,9 @@ def get_object(name, client):
         )
     except botocore.exceptions.ClientError as e:
         if e.response['Error']['Code'] == 'NoSuchKey':
-            print "object not existed"
+            print("object not existed")
         else:
-            print "Unexpected error: %s" % e
+            print("Unexpected error: %s" % e)
 
 TESTS = [
     sanity.create_bucket,

@@ -100,7 +100,7 @@ def generate_post_policy(name, client):
             ['eq', '$success_action_redirect', 'http://github.com']
         ]
     )
-    print ans
+    print(ans)
     fields = ans['fields']
     html = HTML[name]
     html = html.replace('{URL}', ans['url']).replace('{POLICY}', fields['policy'])
@@ -114,7 +114,7 @@ def generate_post_policy(name, client):
     f = open('post-policy-' + name + '.html', 'w')
     f.write(html)
     f.close()
-    print '>>> Now open', 'post-policy-' + name + '.html', 'and test in browser.'
+    print('>>> Now open', 'post-policy-' + name + '.html', 'and test in browser.')
 
 # =====================================================
 

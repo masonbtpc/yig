@@ -1,9 +1,9 @@
 import base
-from urllib import unquote
+from urllib.parse import unquote
 
-SMALL_TEST_FILE = bytes('a' * 1024 * 1024)  # 1M
-RANGE_1 = bytes('abcdefghijklmnop' * 64 * 1024 * 5)  # 5M
-RANGE_2 = bytes('qrstuvwxyz012345' * 64 * 1024 * 5)  # 5M
+SMALL_TEST_FILE = bytes('a' * 1024 * 1024, encoding='utf8')  # 1M
+RANGE_1 = bytes('abcdefghijklmnop' * 64 * 1024 * 5, encoding='utf8')  # 5M
+RANGE_2 = bytes('qrstuvwxyz012345' * 64 * 1024 * 5, encoding='utf8')  # 5M
 
 # =====================================================
 
@@ -22,7 +22,7 @@ def head_bucket_nonexist(name, client):
 
 def list_buckets(name, client):
     ans = client.list_buckets()
-    print 'List buckets: ', ans
+    print('List buckets: ', ans)
 
 
 def put_object(name, client):
@@ -41,7 +41,7 @@ def get_object(name, client):
     )
     body = ans['Body'].read()
     assert body == SMALL_TEST_FILE
-    print 'Get object:', ans
+    print('Get object:', ans)
 
 
 def put_object_copy(name, client):
@@ -53,7 +53,7 @@ def put_object_copy(name, client):
             'Key': name+'hehe',
         }
     )
-    print 'Copy object:', ans
+    print('Copy object:', ans)
 
     # clean-up
     client.delete_object(
@@ -73,14 +73,14 @@ def list_objects_v1(name, client):
     ans = client.list_objects(
         Bucket=name+'hehe'
     )
-    print 'List objects:', ans
+    print('List objects:', ans)
 
 
 def list_objects_v2(name, client):
     ans = client.list_objects_v2(
         Bucket=name+'hehe'
     )
-    print 'List objects v2:', ans
+    print('List objects v2:', ans)
 
 def _put_obj_with_str(client, bucket, key):
         client.put_object(
@@ -163,14 +163,14 @@ def list_object_versions(name, client):
     ans = client.list_object_versions(
         Bucket=name+'hehe'
     )
-    print 'List object versions:', ans
+    print('List object versions:', ans)
 
 
 def delete_nonempty_bucket_should_fail(name, client):
     ans = client.delete_bucket(
         Bucket=name+'hehe'
     )
-    print 'Delete non-empty bucket', ans
+    print('Delete non-empty bucket', ans)
 
 
 def delete_object(name, client):
@@ -187,7 +187,7 @@ def create_multipart_upload(name, client):
         Bucket=name+'hehe',
         Key=name+'multipart',
     )
-    print 'Create multipart upload:', ans
+    print('Create multipart upload:', ans)
     global upload_id
     upload_id[name] = ans['UploadId']
     ans = client.create_multipart_upload(
@@ -196,7 +196,7 @@ def create_multipart_upload(name, client):
     )
     global upload_id_to_abort
     upload_id_to_abort[name] = ans['UploadId']
-    print 'Create multipart upload to abort:', ans
+    print('Create multipart upload to abort:', ans)
 
 
 etag_1 = {}
@@ -211,7 +211,7 @@ def upload_part(name, client):
         PartNumber=1,
         UploadId=upload_id[name],
     )
-    print 'Upload part 1:', ans
+    print('Upload part 1:', ans)
     etag_1[name] = ans['ETag']
     ans = client.upload_part(
         Body=RANGE_2,
@@ -220,7 +220,7 @@ def upload_part(name, client):
         PartNumber=2,
         UploadId=upload_id[name],
     )
-    print 'Upload part 2:', ans
+    print('Upload part 2:', ans)
     etag_2[name] = ans['ETag']
 
 
@@ -228,7 +228,6 @@ def list_multipart_uploads(name, client):
     ans = client.list_multipart_uploads(
         Bucket=name+'hehe'
     )
-    print 'List multipart uploads:', ans
 
 
 def list_parts(name, client):
@@ -237,7 +236,7 @@ def list_parts(name, client):
         Key=name+'multipart',
         UploadId=upload_id[name],
     )
-    print 'List multipart upload parts:', ans
+    print('List multipart upload parts:', ans)
 
 
 def abort_multipart_upload(name, client):
@@ -246,7 +245,7 @@ def abort_multipart_upload(name, client):
         Key=name+'toAbort',
         UploadId=upload_id_to_abort[name],
     )
-    print 'Abort multipart upload:', ans
+    print('Abort multipart upload:', ans)
 
 
 def complete_multipart_upload(name, client):
@@ -261,7 +260,7 @@ def complete_multipart_upload(name, client):
         },
         UploadId=upload_id[name],
     )
-    print 'Complete multipart upload:', ans
+    print('Complete multipart upload:', ans)
 
 def put_object_copy_multipart(name, client):
     ans = client.copy_object(
@@ -272,7 +271,7 @@ def put_object_copy_multipart(name, client):
             'Key': name+'multipart',
         }
     )
-    print 'Copy multipart object:', ans
+    print('Copy multipart object:', ans)
 
     ans = client.get_object(
         Bucket=name+'hehe',
@@ -280,7 +279,7 @@ def put_object_copy_multipart(name, client):
     )
     body = ans['Body'].read()
     assert body == RANGE_1 + RANGE_2
-    print 'Get object:', ans
+    print('Get object:', ans)
 
     # clean-up
     client.delete_object(
@@ -296,7 +295,7 @@ def get_multipart_uploaded_object(name, client):
     )
     body = ans['Body'].read()
     assert body == RANGE_1 + RANGE_2
-    print 'Get object:', ans
+    print('Get object:', ans)
 
 
 def delete_multipart_object(name, client):
@@ -314,7 +313,7 @@ def get_object_ranged(name, client):
     )
     body = ans['Body'].read()
     assert body == 'klmnopqrstu'
-    print 'Get object:', ans
+    print('Get object:', ans)
 
 cors_config = {
     'CORSRules': [
@@ -347,7 +346,7 @@ def get_bucket_cors(name, client):
         Bucket=name+'hehe',
     )
     assert ans['CORSRules'] == cors_config['CORSRules']
-    print 'Get bucket CORS:', ans
+    print('Get bucket CORS:', ans)
 
 
 def delete_bucket_cors(name, client):
@@ -370,7 +369,7 @@ def get_bucket_versioning(name, client):
         Bucket=name+'hehe'
     )
     assert ans['Status'] == 'Enabled'
-    print 'Get bucket versioning:', ans
+    print('Get bucket versioning:', ans)
 
 
 def delete_bucket(name, client):

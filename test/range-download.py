@@ -17,7 +17,7 @@ def s3_multipart(name, client):
 	prepared_data[2] = {"offset":(1<<20), "len":(1<<20), "etag":""}
 	prepared_data[3] = {"offset":(2<<20), "len":(2<<20), "etag":""}
 
-        for part_number, value  in prepared_data.iteritems():
+        for part_number, value  in prepared_data.items():
             this_range = RANGE[value["offset"]:value["offset"] + value["len"]]
             ans = client.upload_part(
                     Body=this_range,
@@ -25,7 +25,7 @@ def s3_multipart(name, client):
                     Key=name+"multipartrange",
                     PartNumber=part_number,
                     UploadId=upload_id)
-            print 'Upload part %d: len: %d, %s' % (part_number, len(this_range), ans["ETag"])
+            print('Upload part %d: len: %d, %s' % (part_number, len(this_range), ans["ETag"]))
             prepared_data[part_number]["etag"] = ans["ETag"]
 
 
@@ -34,12 +34,12 @@ def s3_multipart(name, client):
             Key=name+"multipartrange",
             MultipartUpload={
                 "Parts":[
-                    {"ETag":v["etag"], "PartNumber": k} for k, v in prepared_data.iteritems()
+                    {"ETag":v["etag"], "PartNumber": k} for k, v in prepared_data.items()
                  ]
                 },
             UploadId=upload_id
             )
-        print 'Complete multipart upload:', ans["ETag"]
+        print('Complete multipart upload:', ans["ETag"])
 
 
 def format_range(r):
@@ -69,10 +69,6 @@ def range_download_delete(name, client):
         Bucket=name+'hehe',
         Key=name+'multipartrange',
     )
-
-
-   
-
 
 TESTS = [
 	sanity.create_bucket,

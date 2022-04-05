@@ -15,9 +15,9 @@ def get_object_presigned(name, client):
             'Key': name+'hehe',
         }
     )
-    print url
+    print(url)
     response = requests.get(url)
-    print 'Get object presigned:', response.status_code
+    print('Get object presigned:', response.status_code)
     assert response.status_code == 200
     assert response.text == sanity.SMALL_TEST_FILE
 
@@ -35,14 +35,14 @@ def get_object_acl(name, client):
         Bucket=name+'hehe',
         Key=name+'hehe',
     )
-    print 'Get object ACL:', ans
+    print('Get object ACL:', ans)
 
 
 def get_public_object(name, client):
     url = config.CONFIG['endpoint'] + '/' + name+'hehe' + '/' + name+'hehe'
-    print url
+    print(url)
     response = requests.get(url)
-    print 'Get public object:', response.status_code
+    print('Get public object:', response.status_code)
     assert response.status_code == 200
     assert response.text == sanity.SMALL_TEST_FILE
 
@@ -60,7 +60,7 @@ def object_encryption_s3(name, client):
     )
     body = ans['Body'].read()
     assert body == sanity.SMALL_TEST_FILE
-    print 'SSE-S3:', ans
+    print('SSE-S3:', ans)
 
 
 def object_encryption_customer_key(name, client):
@@ -79,7 +79,7 @@ def object_encryption_customer_key(name, client):
     )
     body = ans['Body'].read()
     assert body == sanity.SMALL_TEST_FILE
-    print 'SSE-C:', ans
+    print('SSE-C:', ans)
 
 
 def object_encryption_wrong_customer_key_should_fail(name, client):
@@ -121,7 +121,7 @@ def sse_copy_plain_to_s3(name, client):
     )
     body = ans['Body'].read()
     assert body == sanity.SMALL_TEST_FILE
-    print 'SSE copy: plain to s3:', ans
+    print('SSE copy: plain to s3:', ans)
 
 
 def sse_copy_plain_to_custom(name, client):
@@ -148,7 +148,7 @@ def sse_copy_plain_to_custom(name, client):
     )
     body = ans['Body'].read()
     assert body == sanity.SMALL_TEST_FILE
-    print 'SSE copy: plain to s3:', ans
+    print('SSE copy: plain to s3:', ans)
 
 
 def sse_copy_s3_to_custom(name, client):
@@ -176,7 +176,7 @@ def sse_copy_s3_to_custom(name, client):
     )
     body = ans['Body'].read()
     assert body == sanity.SMALL_TEST_FILE
-    print 'SSE copy: plain to s3:', ans
+    print('SSE copy: plain to s3:', ans)
 
 
 def sse_copy_custom_to_custom(name, client):
@@ -207,7 +207,7 @@ def sse_copy_custom_to_custom(name, client):
     )
     body = ans['Body'].read()
     assert body == sanity.SMALL_TEST_FILE
-    print 'SSE copy: plain to s3:', ans
+    print('SSE copy: plain to s3:', ans)
 
 
 def delete_multiple_objects(name, client):
@@ -245,7 +245,7 @@ def delete_multiple_objects(name, client):
             ]
         }
     )
-    print 'Delete multiple objects:', ans
+    print('Delete multiple objects:', ans)
 
 # =====================================================
 

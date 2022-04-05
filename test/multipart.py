@@ -10,7 +10,7 @@ def sse_s3_multipart(name, client):
         Key=name+'s3',
         ServerSideEncryption='AES256'
     )
-    print 'Create SSE-S3 multipart upload:', ans
+    print('Create SSE-S3 multipart upload:', ans)
     upload_id = ans['UploadId']
 
     ans = client.upload_part(
@@ -20,7 +20,7 @@ def sse_s3_multipart(name, client):
         PartNumber=1,
         UploadId=upload_id,
     )
-    print 'Upload SSE-S3 part 1:', ans
+    print('Upload SSE-S3 part 1:', ans)
     etag_1 = ans['ETag']
 
     ans = client.upload_part(
@@ -30,7 +30,7 @@ def sse_s3_multipart(name, client):
         PartNumber=2,
         UploadId=upload_id,
     )
-    print 'Upload SSE-S3 part 2:', ans
+    print('Upload SSE-S3 part 2:', ans)
     etag_2 = ans['ETag']
 
     ans = client.complete_multipart_upload(
@@ -44,7 +44,7 @@ def sse_s3_multipart(name, client):
         },
         UploadId=upload_id
     )
-    print 'Complete SSE-S3 multipart upload:', ans
+    print('Complete SSE-S3 multipart upload:', ans)
 
     ans = client.get_object(
         Bucket=name+'hehe',
@@ -52,7 +52,7 @@ def sse_s3_multipart(name, client):
     )
     body = ans['Body'].read()
     assert body == sanity.RANGE_1 + sanity.RANGE_2
-    print 'Get SSE-S3 multipart upload object:', ans
+    print('Get SSE-S3 multipart upload object:', ans)
 
 
 def sse_custom_multipart(name, client):
@@ -62,7 +62,7 @@ def sse_custom_multipart(name, client):
         SSECustomerAlgorithm='AES256',
         SSECustomerKey='0123456789abcdef' * 2
     )
-    print 'Create SSE-S3 multipart upload:', ans
+    print('Create SSE-S3 multipart upload:', ans)
     upload_id = ans['UploadId']
 
     ans = client.upload_part(
@@ -74,7 +74,7 @@ def sse_custom_multipart(name, client):
         SSECustomerAlgorithm='AES256',
         SSECustomerKey='0123456789abcdef' * 2
     )
-    print 'Upload SSE-C part 1:', ans
+    print('Upload SSE-C part 1:', ans)
     etag_1 = ans['ETag']
 
     ans = client.upload_part_copy(
@@ -90,7 +90,7 @@ def sse_custom_multipart(name, client):
         },
         CopySourceRange='bytes=1048576-2097151'
     )
-    print 'Copy SSE-C part 2:', ans
+    print('Copy SSE-C part 2:', ans)
     etag_2 = ans['CopyPartResult']['ETag']
 
     ans = client.complete_multipart_upload(
@@ -104,7 +104,7 @@ def sse_custom_multipart(name, client):
         },
         UploadId=upload_id
     )
-    print 'Complete SSE-C multipart upload:', ans
+    print('Complete SSE-C multipart upload:', ans)
 
     ans = client.get_object(
         Bucket=name+'hehe',
@@ -114,7 +114,7 @@ def sse_custom_multipart(name, client):
     )
     body = ans['Body'].read()
     assert body == sanity.RANGE_1 + sanity.RANGE_2
-    print 'Get SSE-C multipart upload object:', ans
+    print('Get SSE-C multipart upload object:', ans)
 
 
 def delete_multipart_uploaded_objects(name, client):
@@ -131,7 +131,7 @@ def delete_multipart_uploaded_objects(name, client):
             ]
         }
     )
-    print 'Delete multiple objects:', ans
+    print('Delete multiple objects:', ans)
 
 # =====================================================
 

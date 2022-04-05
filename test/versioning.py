@@ -3,8 +3,8 @@ import sanity
 
 
 def compare_files(files_1, files_2):
-    print 'FILES', files_1.keys()
-    print 'FILES', files_2.keys()
+    print('FILES', files_1.keys())
+    print('FILES', files_2.keys())
     list_1 = sorted(files_1.keys())
     list_2 = sorted(files_2.keys())
     if len(list_1) != len(list_2):
@@ -21,7 +21,7 @@ def upload_test_unit(name, client, current_files, current_versions):
         Bucket=name+'hehe',
         Key=name+'_versioning'
     )
-    print 'Put object:', name + '_versioning', ans
+    print('Put object:', name + '_versioning', ans)
     current_files[name+'_versioning'] = True
     current_versions[(name+'_versioning', ans.get('VersionId') or "null")] = True
 
@@ -48,7 +48,7 @@ def upload_test_unit(name, client, current_files, current_versions):
         },
         UploadId=upload_id,
     ),
-    print 'Put object multipart:', name + '_versioning', ans
+    print('Put object multipart:', name + '_versioning', ans)
     current_files[name+'_versioning'] = True
     current_versions[(name+'_versioning', ans[0].get('VersionId') or "null")] = True
 
@@ -57,7 +57,7 @@ def list_test_unit(name, client, current_files, current_versions):
     list_v1 = client.list_objects(
         Bucket=name+'hehe'
     )
-    print 'List v1:', list_v1
+    print('List v1:', list_v1)
     files_v1 = {}
     if list_v1.get('Contents') is not None:
         for f in list_v1.get('Contents'):
@@ -67,7 +67,7 @@ def list_test_unit(name, client, current_files, current_versions):
     list_v2 = client.list_objects_v2(
         Bucket=name+'hehe',
     )
-    print 'List v2:', list_v2
+    print('List v2:', list_v2)
     files_v2 = {}
     if list_v2.get('Contents') is not None:
         for f in list_v2.get('Contents'):
@@ -77,7 +77,7 @@ def list_test_unit(name, client, current_files, current_versions):
     list_versions = client.list_object_versions(
         Bucket=name+'hehe'
     )
-    print 'List versions:', list_versions
+    print('List versions:', list_versions)
     files_versions = {}
     if list_versions.get('Versions') is not None:
         for f in list_versions.get('Versions'):
@@ -91,7 +91,7 @@ def list_test_unit(name, client, current_files, current_versions):
 
 def simple_delete(name, client, current_files, current_versions):
     files = current_files.keys()
-    print 'Simple delete:', files
+    print('Simple delete:', files)
     for f in files:
         ans = client.delete_object(
             Bucket=name+'hehe',
@@ -104,7 +104,7 @@ def simple_delete(name, client, current_files, current_versions):
 
 def versioned_delete(name, client, current_files, current_versions):
     versions = current_versions.keys()
-    print 'Versioned delete:', versions
+    print('Versioned delete:', versions)
     for version in versions:
         f, v = version
         ans = client.delete_object(
@@ -124,7 +124,7 @@ def count_files_and_versions(name, client):
     if list_objects.get('Contents') is not None:
         for f in list_objects.get('Contents'):
             files.append(f.get('Key'))
-    print 'Files:', files
+    print('Files:', files)
 
     list_versions = client.list_object_versions(
         Bucket=name+'hehe'
@@ -133,7 +133,7 @@ def count_files_and_versions(name, client):
     if list_versions.get('Versions') is not None:
         for f in list_versions.get('Versions'):
             file_versions.append((f.get('Key'), f.get('VersionId')))
-    print 'File versions:', file_versions
+    print('File versions:', file_versions)
     delete_markers = []
     if list_versions.get('DeleteMarkers') is not None:
         for f in list_versions.get('DeleteMarkers'):
@@ -222,7 +222,7 @@ def versioning_suspended_senarios(name, client):
 
     upload_test_unit(name, client, current_files, current_versions)
     f, v, d = count_files_and_versions(name, client)
-    print 'After uploading to version disabled bucket:', f, v, d
+    print('After uploading to version disabled bucket:', f, v, d)
     assert f == 1
     assert v == 1
     assert d == 0
@@ -236,7 +236,7 @@ def versioning_suspended_senarios(name, client):
 
     upload_test_unit(name, client, current_files, current_versions)
     f, v, d = count_files_and_versions(name, client)
-    print 'After uploading to version enabled bucket:', f, v, d
+    print('After uploading to version enabled bucket:', f, v, d)
     assert f == 1
     assert v == 3
     assert d == 0
@@ -250,7 +250,7 @@ def versioning_suspended_senarios(name, client):
 
     upload_test_unit(name, client, current_files, current_versions)
     f, v, d = count_files_and_versions(name, client)
-    print 'After uploading to version suspended bucket:', f, v, d
+    print('After uploading to version suspended bucket:', f, v, d)
     assert f == 1
     assert v == 3
     assert d == 0
@@ -260,7 +260,7 @@ def versioning_suspended_senarios(name, client):
         Key=name+'_versioning'
     )
     f, v, d = count_files_and_versions(name, client)
-    print 'After deleting null version object to version suspended bucket:', f, v, d
+    print('After deleting null version object to version suspended bucket:', f, v, d)
     assert f == 0
     assert v == 2
     assert d == 1
@@ -284,7 +284,7 @@ def versioning_suspended_senarios(name, client):
             VersionId=v if v else 'null'
         )
     f, v, d = count_files_and_versions(name, client)
-    print 'After deleting all objects in version suspended bucket:', f, v, d
+    print('After deleting all objects in version suspended bucket:', f, v, d)
     assert f == 0
     assert v == 0
     assert d == 0

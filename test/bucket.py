@@ -14,9 +14,9 @@ def create_bucket_presigned(name, client):
         },
         HttpMethod='PUT',
     )
-    print url
+    print(url)
     response = requests.put(url)
-    print 'Presigned create bucket: ', response.text
+    print('Presigned create bucket: ', response.text)
     assert response.status_code == 200
 
 
@@ -25,9 +25,9 @@ def list_buckets_presigned(name, client):
         ClientMethod='list_buckets',
         HttpMethod='GET'
     )
-    print url
+    print(url)
     response = requests.get(url)
-    print 'Presigned list buckets: ', response.text
+    print('Presigned list buckets: ', response.text)
     assert response.status_code == 200
 
 
@@ -37,9 +37,9 @@ def list_buckets_presigned_expired(name, client):
         HttpMethod='GET',
         ExpiresIn=-3600,
     )
-    print url
+    print(url)
     response = requests.get(url)
-    print 'Presigned list buckets: ', response.text
+    print('Presigned list buckets: ', response.text)
     assert response.status_code != 200
 
 
@@ -54,7 +54,7 @@ def get_bucket_acl(name, client):
     ans = client.get_bucket_acl(
         Bucket=name+'hehe',
     )
-    print 'Get bucket ACL:', ans
+    print('Get bucket ACL:', ans)
 
 
 # boto cannot even send presigned acl requests correctly,
@@ -69,9 +69,9 @@ def get_bucket_acl(name, client):
 #         },
 #         HttpMethod="PUT",
 #     )
-#     print url
+#     print(url)
 #     response = requests.put(url)
-#     print 'Presigned put bucket ACL:', response.headers
+#     print('Presigned put bucket ACL:', response.headers)
 #     assert response.status_code == 200
 
 
@@ -83,9 +83,9 @@ def get_bucket_acl(name, client):
 #         },
 #         HttpMethod='GET',
 #     )
-#     print url
+#     print(url)
 #     response = requests.get(url)
-#     print 'Presigned get bucket ACL:', response.text
+#     print('Presigned get bucket ACL:', response.text)
 #     assert response.status_code == 200
 
 def delete_bucket_presigned(name, client):
@@ -96,9 +96,9 @@ def delete_bucket_presigned(name, client):
             'Bucket': name+'presigned'
         },
     )
-    print url
+    print(url)
     response = requests.delete(url)
-    print 'Presigned delete bucket:', response.text
+    print('Presigned delete bucket:', response.text)
     assert response.status_code == 204
 
 
@@ -107,7 +107,7 @@ def bucket_limit_per_user(name, client):
         try:
             client.create_bucket(Bucket=name+str(i))
         except Exception as e:
-            print 'Exception for bucket: ', name+str(i)
+            print('Exception for bucket: ', name+str(i))
             if i < 100:
                 raise e
 

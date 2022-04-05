@@ -9,7 +9,7 @@ import (
 )
 
 //gc
-func (t *TidbClient) PutObjectToGarbageCollection(object *Object, tx DB) (err error) {
+func (t *CockroachDBClient) PutObjectToGarbageCollection(object *Object, tx DB) (err error) {
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {
@@ -48,7 +48,7 @@ func (t *TidbClient) PutObjectToGarbageCollection(object *Object, tx DB) (err er
 	return nil
 }
 
-func (t *TidbClient) ScanGarbageCollection(limit int, startRowKey string) (gcs []GarbageCollection, err error) {
+func (t *CockroachDBClient) ScanGarbageCollection(limit int, startRowKey string) (gcs []GarbageCollection, err error) {
 	var count int
 	var sqltext string
 	var rows *sql.Rows
@@ -88,7 +88,7 @@ func (t *TidbClient) ScanGarbageCollection(limit int, startRowKey string) (gcs [
 	return
 }
 
-func (t *TidbClient) RemoveGarbageCollection(garbage GarbageCollection) (err error) {
+func (t *CockroachDBClient) RemoveGarbageCollection(garbage GarbageCollection) (err error) {
 	var tx *sql.Tx
 	tx, err = t.Client.Begin()
 	if err != nil {
@@ -119,7 +119,7 @@ func (t *TidbClient) RemoveGarbageCollection(garbage GarbageCollection) (err err
 	return nil
 }
 
-func (t *TidbClient) PutFreezerToGarbageCollection(object *Freezer, tx DB) (err error) {
+func (t *CockroachDBClient) PutFreezerToGarbageCollection(object *Freezer, tx DB) (err error) {
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {
@@ -157,7 +157,7 @@ func (t *TidbClient) PutFreezerToGarbageCollection(object *Freezer, tx DB) (err 
 }
 
 //util func
-func (t *TidbClient) GetGarbageCollection(bucketName, objectName, version string) (gc GarbageCollection, err error) {
+func (t *CockroachDBClient) GetGarbageCollection(bucketName, objectName, version string) (gc GarbageCollection, err error) {
 	sqltext := "select bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes from gc where bucketname=? and objectname=? and version=?;"
 	var hasPart bool
 	var mtime string

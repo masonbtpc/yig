@@ -4,7 +4,7 @@ import (
 	. "github.com/journeymidnight/yig/meta/types"
 )
 
-func (t *TidbClient) GetClusters() (cluster []Cluster, err error) {
+func (t *CockroachDBClient) GetClusters() (cluster []Cluster, err error) {
 	sqltext := "select fsid,pool,weight from cluster"
 	rows, err := t.Client.Query(sqltext)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/journeymidnight/yig/api/datatype"
 	. "github.com/journeymidnight/yig/error"
+	"github.com/journeymidnight/yig/meta/client/cockroachdb"
 	"github.com/journeymidnight/yig/meta/client/tidbclient"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -24,17 +25,17 @@ var bucketColumnValues = []driver.Value{
 	"2010-04-01 00:00:00", 4, []byte("{}"),
 }
 
-func newClient() (client *tidbclient.TidbClient, mock sqlmock.Sqlmock, err error) {
+func newClient() (client *cockroachdb.CockroachDBClient, mock sqlmock.Sqlmock, err error) {
 	var db *sql.DB
 	db, mock, err = sqlmock.New()
 	if err != nil {
 		return
 	}
-	client = &tidbclient.TidbClient{db}
+	client = &cockroachdb.CockroachDBClient{db}
 	return
 }
 
-func TestTidbClient_GetBucket(t *testing.T) {
+func TestCockroachDBClient_GetBucket(t *testing.T) {
 	client, mock, err := newClient()
 	if err != nil {
 		t.Error("Error creating mock client:", err)

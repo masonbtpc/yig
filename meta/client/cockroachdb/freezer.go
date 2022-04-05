@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-func (t *TidbClient) CreateFreezer(freezer *Freezer) (err error) {
+func (t *CockroachDBClient) CreateFreezer(freezer *Freezer) (err error) {
 	sql, args := freezer.GetCreateSql()
 	_, err = t.Client.Exec(sql, args...)
 	return
 }
 
-func (t *TidbClient) GetFreezer(bucketName, objectName, version string) (freezer *Freezer, err error) {
+func (t *CockroachDBClient) GetFreezer(bucketName, objectName, version string) (freezer *Freezer, err error) {
 	var lastmodifiedtime string
 	sqltext := "select bucketname,objectname,IFNULL(version,''),status,lifetime,lastmodifiedtime,IFNULL(location,''),IFNULL(pool,''),IFNULL(ownerid,''),IFNULL(size,'0'),IFNULL(objectid,''),IFNULL(etag,'') from restoreobjects where bucketname=? and objectname=?;"
 	row := t.Client.QueryRow(sqltext, bucketName, objectName)
@@ -52,7 +52,7 @@ func (t *TidbClient) GetFreezer(bucketName, objectName, version string) (freezer
 	return
 }
 
-func (t *TidbClient) GetFreezerStatus(bucketName, objectName, version string) (freezer *Freezer, err error) {
+func (t *CockroachDBClient) GetFreezerStatus(bucketName, objectName, version string) (freezer *Freezer, err error) {
 	sqltext := "select bucketname,objectname,IFNULL(version,''),status from restoreobjects where bucketname=? and objectname=?;"
 	row := t.Client.QueryRow(sqltext, bucketName, objectName)
 	freezer = &Freezer{}
@@ -69,7 +69,7 @@ func (t *TidbClient) GetFreezerStatus(bucketName, objectName, version string) (f
 	return
 }
 
-func (t *TidbClient) UploadFreezerDate(bucketName, objectName string, lifetime int) (err error) {
+func (t *CockroachDBClient) UploadFreezerDate(bucketName, objectName string, lifetime int) (err error) {
 	sqltext := "update restoreobjects set lifetime=? where bucketname=? and objectname=?;"
 	_, err = t.Client.Exec(sqltext, lifetime, bucketName, objectName)
 	if err != nil {
@@ -78,7 +78,7 @@ func (t *TidbClient) UploadFreezerDate(bucketName, objectName string, lifetime i
 	return nil
 }
 
-func (t *TidbClient) DeleteFreezer(bucketName, objectName string, tx DB) (err error) {
+func (t *CockroachDBClient) DeleteFreezer(bucketName, objectName string, tx DB) (err error) {
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {

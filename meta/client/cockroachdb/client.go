@@ -5,16 +5,16 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/jackc/pgx/v4"
 	"github.com/journeymidnight/yig/helper"
 )
 
-type TidbClient struct {
+type CockroachDBClient struct {
 	Client *sql.DB
 }
 
-func NewTidbClient() *TidbClient {
-	cli := &TidbClient{}
+func NewCockroachDBclient() *CockroachDBClient {
+	cli := &CockroachDBClient{}
 	conn, err := sql.Open("mysql", helper.CONFIG.TidbInfo)
 	if err != nil {
 		os.Exit(1)

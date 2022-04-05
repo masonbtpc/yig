@@ -18,7 +18,7 @@ import (
 	"github.com/journeymidnight/yig/meta/util"
 )
 
-func (t *TidbClient) GetMultipart(bucketName, objectName, uploadId string) (multipart Multipart, err error) {
+func (t *CockroachDBClient) GetMultipart(bucketName, objectName, uploadId string) (multipart Multipart, err error) {
 	multipart.Parts = make(map[int]*Part)
 	timestampString, err := util.Decrypt(uploadId)
 	if err != nil {
@@ -102,7 +102,7 @@ func (t *TidbClient) GetMultipart(bucketName, objectName, uploadId string) (mult
 	return
 }
 
-func (t *TidbClient) CreateMultipart(multipart Multipart) (err error) {
+func (t *CockroachDBClient) CreateMultipart(multipart Multipart) (err error) {
 	m := multipart.Metadata
 	uploadtime := math.MaxUint64 - uint64(multipart.InitialTime.UnixNano())
 	acl, _ := json.Marshal(m.Acl)
@@ -114,7 +114,7 @@ func (t *TidbClient) CreateMultipart(multipart Multipart) (err error) {
 	return
 }
 
-func (t *TidbClient) PutObjectPart(multipart *Multipart, part *Part, tx DB) (err error) {
+func (t *CockroachDBClient) PutObjectPart(multipart *Multipart, part *Part, tx DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}
@@ -131,7 +131,7 @@ func (t *TidbClient) PutObjectPart(multipart *Multipart, part *Part, tx DB) (err
 	return
 }
 
-func (t *TidbClient) DeleteMultipart(multipart *Multipart, tx DB) (err error) {
+func (t *CockroachDBClient) DeleteMultipart(multipart *Multipart, tx DB) (err error) {
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {
@@ -157,7 +157,7 @@ func (t *TidbClient) DeleteMultipart(multipart *Multipart, tx DB) (err error) {
 	return err
 }
 
-func (t *TidbClient) ListMultipartUploads(bucketName, keyMarker, uploadIdMarker, prefix, delimiter, encodingType string, maxUploads int) (uploads []datatype.Upload, prefixs []string, isTruncated bool, nextKeyMarker, nextUploadIdMarker string, err error) {
+func (t *CockroachDBClient) ListMultipartUploads(bucketName, keyMarker, uploadIdMarker, prefix, delimiter, encodingType string, maxUploads int) (uploads []datatype.Upload, prefixs []string, isTruncated bool, nextKeyMarker, nextUploadIdMarker string, err error) {
 	var count int
 	var exit bool
 	commonPrefixes := make(map[string]struct{})
@@ -281,7 +281,7 @@ func (t *TidbClient) ListMultipartUploads(bucketName, keyMarker, uploadIdMarker,
 	return
 }
 
-func (t *TidbClient) RenameObjectPart(object *Object, sourceObject string, tx DB) (err error) {
+func (t *CockroachDBClient) RenameObjectPart(object *Object, sourceObject string, tx DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}

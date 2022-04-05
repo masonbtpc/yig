@@ -7,7 +7,7 @@ import (
 	. "github.com/journeymidnight/yig/meta/types"
 )
 
-func (t *TidbClient) PutBucketToLifeCycle(lifeCycle LifeCycle) error {
+func (t *CockroachDBClient) PutBucketToLifeCycle(lifeCycle LifeCycle) error {
 	sqltext := "insert into lifecycle(bucketname,status) values (?,?);"
 	_, err := t.Client.Exec(sqltext, lifeCycle.BucketName, lifeCycle.Status)
 	if err != nil {
@@ -17,7 +17,7 @@ func (t *TidbClient) PutBucketToLifeCycle(lifeCycle LifeCycle) error {
 	return nil
 }
 
-func (t *TidbClient) RemoveBucketFromLifeCycle(bucket Bucket) error {
+func (t *CockroachDBClient) RemoveBucketFromLifeCycle(bucket Bucket) error {
 	sqltext := "delete from lifecycle where bucketname=?;"
 	_, err := t.Client.Exec(sqltext, bucket.Name)
 	if err != nil {
@@ -27,7 +27,7 @@ func (t *TidbClient) RemoveBucketFromLifeCycle(bucket Bucket) error {
 	return nil
 }
 
-func (t *TidbClient) ScanLifeCycle(limit int, marker string) (result ScanLifeCycleResult, err error) {
+func (t *CockroachDBClient) ScanLifeCycle(limit int, marker string) (result ScanLifeCycleResult, err error) {
 	result.Truncated = false
 	sqltext := "select bucketname,status from lifecycle where bucketname > ? limit ?;"
 	rows, err := t.Client.Query(sqltext, marker, limit)

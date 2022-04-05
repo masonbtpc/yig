@@ -7,13 +7,13 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/jackc/pgx/v4"
 	. "github.com/journeymidnight/yig/error"
 	"github.com/journeymidnight/yig/helper"
 	. "github.com/journeymidnight/yig/meta/types"
 )
 
-func (t *TidbClient) GetBucket(bucketName string) (bucket *Bucket, err error) {
+func (t *CockroachDBClient) GetBucket(bucketName string) (bucket *Bucket, err error) {
 	var acl, cors, logging, lc, policy, website, encryption, createTime string
 	sqltext := "select bucketname,acl,cors,COALESCE(logging,\"\"),lc,uid,policy,website,COALESCE(encryption,\"\"),createtime,usages,versioning from buckets where bucketname=?;"
 	bucket = new(Bucket)
@@ -72,7 +72,7 @@ func (t *TidbClient) GetBucket(bucketName string) (bucket *Bucket, err error) {
 	return
 }
 
-func (t *TidbClient) GetBuckets() (buckets []Bucket, err error) {
+func (t *CockroachDBClient) GetBuckets() (buckets []Bucket, err error) {
 	sqltext := "select bucketname,acl,cors,COALESCE(logging,\"\"),lc,uid,policy,website,COALESCE(encryption,\"\"),createtime,usages,versioning from buckets;"
 	rows, err := t.Client.Query(sqltext)
 	if err == sql.ErrNoRows {
@@ -140,7 +140,7 @@ func (t *TidbClient) GetBuckets() (buckets []Bucket, err error) {
 }
 
 //Actually this method is used to update bucket
-func (t *TidbClient) PutBucket(bucket Bucket) error {
+func (t *CockroachDBClient) PutBucket(bucket Bucket) error {
 	sql, args := bucket.GetUpdateSql()
 	_, err := t.Client.Exec(sql, args...)
 	if err != nil {
@@ -149,7 +149,7 @@ func (t *TidbClient) PutBucket(bucket Bucket) error {
 	return nil
 }
 
-func (t *TidbClient) CheckAndPutBucket(bucket Bucket) (bool, error) {
+func (t *CockroachDBClient) CheckAndPutBucket(bucket Bucket) (bool, error) {
 	var processed bool
 	_, err := t.GetBucket(bucket.Name)
 	if err == nil {
@@ -166,7 +166,7 @@ func (t *TidbClient) CheckAndPutBucket(bucket Bucket) (bool, error) {
 	return processed, err
 }
 
-func (t *TidbClient) ListObjects(bucketName, marker, verIdMarker, prefix, delimiter string, versioned bool, maxKeys int) (retObjects []*Object, prefixes []string, truncated bool, nextMarker, nextVerIdMarker string, err error) {
+func (t *CockroachDBClient) ListObjects(bucketName, marker, verIdMarker, prefix, delimiter string, versioned bool, maxKeys int) (retObjects []*Object, prefixes []string, truncated bool, nextMarker, nextVerIdMarker string, err error) {
 	if versioned {
 		return
 	}
@@ -321,7 +321,7 @@ func (t *TidbClient) ListObjects(bucketName, marker, verIdMarker, prefix, delimi
 	return
 }
 
-func (t *TidbClient) DeleteBucket(bucket Bucket) error {
+func (t *CockroachDBClient) DeleteBucket(bucket Bucket) error {
 	sqltext := "delete from buckets where bucketname=?;"
 	_, err := t.Client.Exec(sqltext, bucket.Name)
 	if err != nil {
@@ -330,7 +330,7 @@ func (t *TidbClient) DeleteBucket(bucket Bucket) error {
 	return nil
 }
 
-func (t *TidbClient) UpdateUsage(bucketName string, size int64, tx DB) (err error) {
+func (t *CockroachDBClient) UpdateUsage(bucketName string, size int64, tx DB) (err error) {
 	if !helper.CONFIG.PiggybackUpdateUsage {
 		return nil
 	}

@@ -6,7 +6,7 @@ import (
 )
 
 //objmap
-func (t *TidbClient) GetObjectMap(bucketName, objectName string) (objMap *ObjMap, err error) {
+func (t *CockroachDBClient) GetObjectMap(bucketName, objectName string) (objMap *ObjMap, err error) {
 	objMap = &ObjMap{}
 	sqltext := "select bucketname,objectname,nullvernum from objmap where bucketname=? and objectName=?;"
 	err = t.Client.QueryRow(sqltext, bucketName, objectName).Scan(
@@ -21,7 +21,7 @@ func (t *TidbClient) GetObjectMap(bucketName, objectName string) (objMap *ObjMap
 	return
 }
 
-func (t *TidbClient) PutObjectMap(objMap *ObjMap, tx DB) (err error) {
+func (t *CockroachDBClient) PutObjectMap(objMap *ObjMap, tx DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}
@@ -30,7 +30,7 @@ func (t *TidbClient) PutObjectMap(objMap *ObjMap, tx DB) (err error) {
 	return err
 }
 
-func (t *TidbClient) DeleteObjectMap(objMap *ObjMap, tx DB) (err error) {
+func (t *CockroachDBClient) DeleteObjectMap(objMap *ObjMap, tx DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}

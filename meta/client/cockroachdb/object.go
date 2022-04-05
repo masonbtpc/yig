@@ -13,7 +13,7 @@ import (
 	"github.com/xxtea/xxtea-go/xxtea"
 )
 
-func (t *TidbClient) GetObject(bucketName, objectName, version string) (object *Object, err error) {
+func (t *CockroachDBClient) GetObject(bucketName, objectName, version string) (object *Object, err error) {
 	var ibucketname, iname, customattributes, acl, lastModifiedTime string
 	var iversion uint64
 
@@ -86,7 +86,7 @@ func (t *TidbClient) GetObject(bucketName, objectName, version string) (object *
 	return
 }
 
-func (t *TidbClient) GetAllObject(bucketName, objectName, version string) (object []*Object, err error) {
+func (t *CockroachDBClient) GetAllObject(bucketName, objectName, version string) (object []*Object, err error) {
 	sqltext := "select version from objects where bucketname=? and name=?;"
 	var versions []string
 	rows, err := t.Client.Query(sqltext, bucketName, objectName)
@@ -113,19 +113,19 @@ func (t *TidbClient) GetAllObject(bucketName, objectName, version string) (objec
 	return
 }
 
-func (t *TidbClient) UpdateObjectAttrs(object *Object) error {
+func (t *CockroachDBClient) UpdateObjectAttrs(object *Object) error {
 	sql, args := object.GetUpdateAttrsSql()
 	_, err := t.Client.Exec(sql, args...)
 	return err
 }
 
-func (t *TidbClient) UpdateObjectAcl(object *Object) error {
+func (t *CockroachDBClient) UpdateObjectAcl(object *Object) error {
 	sql, args := object.GetUpdateAclSql()
 	_, err := t.Client.Exec(sql, args...)
 	return err
 }
 
-func (t *TidbClient) RenameObject(object *Object, sourceObject string, tx DB) (err error) {
+func (t *CockroachDBClient) RenameObject(object *Object, sourceObject string, tx DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}
@@ -134,7 +134,7 @@ func (t *TidbClient) RenameObject(object *Object, sourceObject string, tx DB) (e
 	return
 }
 
-func (t *TidbClient) ReplaceObjectMetas(object *Object, tx DB) (err error) {
+func (t *CockroachDBClient) ReplaceObjectMetas(object *Object, tx DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}
@@ -143,7 +143,7 @@ func (t *TidbClient) ReplaceObjectMetas(object *Object, tx DB) (err error) {
 	return
 }
 
-func (t *TidbClient) UpdateAppendObject(object *Object, tx DB) (err error) {
+func (t *CockroachDBClient) UpdateAppendObject(object *Object, tx DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}
@@ -152,7 +152,7 @@ func (t *TidbClient) UpdateAppendObject(object *Object, tx DB) (err error) {
 	return err
 }
 
-func (t *TidbClient) PutObject(object *Object, tx DB) (err error) {
+func (t *CockroachDBClient) PutObject(object *Object, tx DB) (err error) {
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {
@@ -183,7 +183,7 @@ func (t *TidbClient) PutObject(object *Object, tx DB) (err error) {
 	return err
 }
 
-func (t *TidbClient) UpdateObject(object *Object, tx DB) (err error) {
+func (t *CockroachDBClient) UpdateObject(object *Object, tx DB) (err error) {
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {
@@ -221,7 +221,7 @@ func (t *TidbClient) UpdateObject(object *Object, tx DB) (err error) {
 	return nil
 }
 
-func (t *TidbClient) DeleteObject(object *Object, tx DB) (err error) {
+func (t *CockroachDBClient) DeleteObject(object *Object, tx DB) (err error) {
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {

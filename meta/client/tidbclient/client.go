@@ -15,7 +15,7 @@ type TidbClient struct {
 
 func NewTidbClient() *TidbClient {
 	cli := &TidbClient{}
-	conn, err := sql.Open("mysql", helper.CONFIG.TidbInfo)
+	conn, err := sql.Open("mysql", helper.CONFIG.DBInfo)
 	if err != nil {
 		os.Exit(1)
 	}

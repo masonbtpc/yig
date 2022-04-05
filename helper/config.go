@@ -140,7 +140,7 @@ func MarshalTOMLConfig() error {
 	CONFIG.LcThread = Ternary(c.LcThread == 0,
 		1, c.LcThread).(int)
 	CONFIG.LogLevel = Ternary(len(c.LogLevel) == 0, "info", c.LogLevel).(string)
-	CONFIG.MetaStore = Ternary(c.MetaStore == "", "tidb", c.MetaStore).(string)
+	CONFIG.MetaStore = Ternary(c.MetaStore == "", "cockroachdb", c.MetaStore).(string)
 
 	CONFIG.EnableUsagePush = c.EnableUsagePush
 	CONFIG.RedisAddress = c.RedisAddress

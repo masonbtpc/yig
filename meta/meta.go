@@ -3,6 +3,7 @@ package meta
 import (
 	"github.com/journeymidnight/yig/helper"
 	"github.com/journeymidnight/yig/meta/client"
+	"github.com/journeymidnight/yig/meta/client/cockroachdb"
 	"github.com/journeymidnight/yig/meta/client/tidbclient"
 )
 
@@ -17,12 +18,14 @@ type Meta struct {
 
 func New(myCacheType CacheType) *Meta {
 	meta := Meta{
-		Cache:  newMetaCache(myCacheType),
+		Cache: newMetaCache(myCacheType),
 	}
 	if helper.CONFIG.MetaStore == "tidb" {
 		meta.Client = tidbclient.NewTidbClient()
+	} else if helper.CONFIG.MetaStore == "cockroachdb" {
+		meta.Client = cockroachdb.NewCockroachDBclient()
 	} else {
-		panic("unsupport metastore")
+		panic("unsupported metastore")
 	}
 	return &meta
 }

@@ -15,7 +15,7 @@ type CockroachDBClient struct {
 
 func NewCockroachDBclient() *CockroachDBClient {
 	cli := &CockroachDBClient{}
-	conn, err := sql.Open("mysql", helper.CONFIG.TidbInfo)
+	conn, err := sql.Open("pgsql", helper.CONFIG.DBInfo)
 	if err != nil {
 		os.Exit(1)
 	}

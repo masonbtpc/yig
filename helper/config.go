@@ -43,7 +43,7 @@ type Config struct {
 	CephConfigPattern      string `toml:"ceph_config_pattern"`
 	ReservedOrigins        string `toml:"reserved_origins"` // www.ccc.com,www.bbb.com,127.0.0.1
 	MetaStore              string `toml:"meta_store"`
-	TidbInfo               string `toml:"tidb_info"`
+	DBInfo                 string `toml:"db_info"`
 	KeepAlive              bool   `toml:"keepalive"`
 	EnableCompression      bool   `toml:"enable_compression"`
 
@@ -128,7 +128,7 @@ func MarshalTOMLConfig() error {
 	CONFIG.AdminKey = c.AdminKey
 	CONFIG.CephConfigPattern = c.CephConfigPattern
 	CONFIG.ReservedOrigins = c.ReservedOrigins
-	CONFIG.TidbInfo = c.TidbInfo
+	CONFIG.DBInfo = c.DBInfo
 	CONFIG.KeepAlive = c.KeepAlive
 	CONFIG.EnableCompression = c.EnableCompression
 	CONFIG.InstanceId = Ternary(c.InstanceId == "",

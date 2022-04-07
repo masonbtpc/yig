@@ -34,20 +34,22 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dustin/go-humanize v1.0.0
 	github.com/go-sql-driver/mysql v1.4.1
+	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/golang/snappy v0.0.1
 	github.com/gomodule/redigo v1.7.0
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/mux v1.6.2
 	github.com/jackc/pgx/v4 v4.15.0
 	github.com/journeymidnight/aws-sdk-go v1.18.1
-	github.com/journeymidnight/radoshttpd v0.0.0-20190617133011-609666b51136
+	github.com/journeymidnight/radoshttpd v0.0.7
+	github.com/kr/pretty v0.2.1 // indirect
 	github.com/minio/highwayhash v1.0.0
-	github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829
+	github.com/prometheus/client_golang v0.9.3
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go v1.1.4
 	github.com/xxtea/xxtea-go v0.0.0-20170828040851-35c4b17eecf6
-	golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae
-	google.golang.org/appengine v0.0.0-00010101000000-000000000000 // indirect
+	golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1
+	google.golang.org/appengine v1.4.0 // indirect
 )
 
 replace github.com/journeymidnight/yig => github.com/masonbtpc/yig v0.9.9

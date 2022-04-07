@@ -19,9 +19,10 @@ pprof_listener = "0.0.0.0:8730"
 reserved_origins = "s3.test.com,s3-internal.test.com"
 
 # Meta Config
-meta_cache_type = 2
-meta_store = "tidb" # tidb or cockroachdb
-db_info = "root:@tcp(10.5.0.17:4000)/yig" #port 4000 for tidb 26257 for cockroachdb
+meta_cache_type = 0
+meta_store = "cockroachdb" # tidb or cockroachdb
+ndb_info = "root:@tcp(10.5.0.17:4000)/yig" #port 4000 for tidb 26257 for cockroachdb
+db_info = "postgres://10.5.0.9:26257/yig" #port 4000 for tidb 26257 for cockroachdb
 keepalive = true
 enable_compression = false
 enable_usage_push = false
@@ -29,7 +30,7 @@ redis_address = "redis:6379"
 redis_password = "hehehehe"
 redis_connection_number = 10
 memory_cache_max_entry_count = 100000
-enable_data_cache = true
+enable_data_cache = false
 redis_connect_timeout = 1
 redis_read_timeout = 1
 redis_write_timeout = 1

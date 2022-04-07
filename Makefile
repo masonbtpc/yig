@@ -5,7 +5,7 @@ WORKDIR = /work
 BUILDROOT = rpm-build
 BUILDDIR = $(WORKDIR)/$(BUILDROOT)/BUILD/$(REPO)
 export GO111MODULE=on
-export GOPROXY=https://goproxy.cn
+export GOPROXY=https://proxy.golang.org
 
 build:
 	cd integrate && bash buildyig.sh $(BUILDDIR)

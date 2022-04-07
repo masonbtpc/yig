@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/jackc/pgx/v4"
+	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/journeymidnight/yig/helper"
 )
 
@@ -15,7 +15,7 @@ type CockroachDBClient struct {
 
 func NewCockroachDBclient() *CockroachDBClient {
 	cli := &CockroachDBClient{}
-	conn, err := sql.Open("pgsql", helper.CONFIG.DBInfo)
+	conn, err := sql.Open("pgx", helper.CONFIG.DBInfo)
 	if err != nil {
 		os.Exit(1)
 	}

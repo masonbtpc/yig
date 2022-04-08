@@ -2,13 +2,13 @@
 URL = github.com/journeymidnight
 REPO = yig
 WORKDIR = /work
-BUILDROOT = rpm-build
-BUILDDIR = $(WORKDIR)/$(BUILDROOT)/BUILD/$(REPO)
+BUILDROOT = build
+BUILDDIR = $(WORKDIR)/$(BUILDROOT)/$(REPO)
 export GO111MODULE=on
-export GOPROXY=https://proxy.golang.org
+export GOPROXY=https://goproxy.io,direct
 
 build:
-	cd integrate && bash buildyig.sh $(BUILDDIR)
+	cd integrate && bash build.sh $(BUILDDIR)
 
 build_internal:
 	go build $(URL)/$(REPO)

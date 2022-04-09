@@ -2,9 +2,10 @@ package cockroachdb
 
 import (
 	"database/sql"
+	"time"
+
 	. "github.com/journeymidnight/yig/error"
 	. "github.com/journeymidnight/yig/meta/types"
-	"time"
 )
 
 func (t *CockroachDBClient) CreateFreezer(freezer *Freezer) (err error) {
@@ -15,7 +16,7 @@ func (t *CockroachDBClient) CreateFreezer(freezer *Freezer) (err error) {
 
 func (t *CockroachDBClient) GetFreezer(bucketName, objectName, version string) (freezer *Freezer, err error) {
 	var lastmodifiedtime string
-	sqltext := "select bucketname,objectname,IFNULL(version,''),status,lifetime,lastmodifiedtime,IFNULL(location,''),IFNULL(pool,''),IFNULL(ownerid,''),IFNULL(size,'0'),IFNULL(objectid,''),IFNULL(etag,'') from restoreobjects where bucketname=? and objectname=?;"
+	sqltext := "select bucketname,objectname,IFNULL(version,''),status,lifetime,lastmodifiedtime,IFNULL(location,''),IFNULL(pool,''),IFNULL(ownerid,''),IFNULL(size,'0'),IFNULL(objectid,''),IFNULL(etag,'') from restoreobjects where bucketname=$1 and objectname=$2;"
 	row := t.Client.QueryRow(sqltext, bucketName, objectName)
 	freezer = &Freezer{}
 	err = row.Scan(
@@ -53,7 +54,7 @@ func (t *CockroachDBClient) GetFreezer(bucketName, objectName, version string) (
 }
 
 func (t *CockroachDBClient) GetFreezerStatus(bucketName, objectName, version string) (freezer *Freezer, err error) {
-	sqltext := "select bucketname,objectname,IFNULL(version,''),status from restoreobjects where bucketname=? and objectname=?;"
+	sqltext := "select bucketname,objectname,IFNULL(version,''),status from restoreobjects where bucketname=$1 and objectname=$2;"
 	row := t.Client.QueryRow(sqltext, bucketName, objectName)
 	freezer = &Freezer{}
 	err = row.Scan(
@@ -70,7 +71,7 @@ func (t *CockroachDBClient) GetFreezerStatus(bucketName, objectName, version str
 }
 
 func (t *CockroachDBClient) UploadFreezerDate(bucketName, objectName string, lifetime int) (err error) {
-	sqltext := "update restoreobjects set lifetime=? where bucketname=? and objectname=?;"
+	sqltext := "update restoreobjects set lifetime=$1 where bucketname=$2 and objectname=$3;"
 	_, err = t.Client.Exec(sqltext, lifetime, bucketName, objectName)
 	if err != nil {
 		return err
@@ -93,12 +94,12 @@ func (t *CockroachDBClient) DeleteFreezer(bucketName, objectName string, tx DB) 
 			}
 		}()
 	}
-	sqltext := "delete from restoreobjects where bucketname=? and objectname=?;"
+	sqltext := "delete from restoreobjects where bucketname=$1 and objectname=$2;"
 	_, err = tx.Exec(sqltext, bucketName, objectName)
 	if err != nil {
 		return err
 	}
-	sqltext = "delete from restoreobjectpart where objectname=? and bucketname=?;"
+	sqltext = "delete from restoreobjectpart where objectname=$1 and bucketname=$2;"
 	_, err = tx.Exec(sqltext, bucketName, objectName)
 	if err != nil {
 		return err
@@ -109,7 +110,7 @@ func (t *CockroachDBClient) DeleteFreezer(bucketName, objectName string, tx DB) 
 //util function
 func getFreezerParts(bucketName, objectName string, cli *sql.DB) (parts map[int]*Part, err error) {
 	parts = make(map[int]*Part)
-	sqltext := "select partnumber,size,objectid,offset,etag,lastmodified,initializationvector from restoreobjectpart where bucketname=? and objectname=?;"
+	sqltext := "select partnumber,size,objectid,offset,etag,lastmodified,initializationvector from restoreobjectpart where bucketname=$1 and objectname=$2;"
 	rows, err := cli.Query(sqltext, bucketName, objectName)
 	if err != nil {
 		return

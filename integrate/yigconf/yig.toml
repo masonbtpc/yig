@@ -21,8 +21,8 @@ reserved_origins = "s3.test.com,s3-internal.test.com"
 # Meta Config
 meta_cache_type = 0
 meta_store = "cockroachdb" # tidb or cockroachdb
-ndb_info = "root:@tcp(10.5.0.17:4000)/yig" #port 4000 for tidb 26257 for cockroachdb
-db_info = "postgres://10.5.0.9:26257/yig" #port 4000 for tidb 26257 for cockroachdb
+#db_info = "root:@tcp(10.5.0.17:4000)/yig" #conn string for mysql/tidb. 
+db_info = "postgres://10.5.0.9:26257/yig" #conn string for postgres/cockroachdb
 keepalive = true
 enable_compression = false
 enable_usage_push = false

@@ -15,7 +15,7 @@ import (
 
 func (t *CockroachDBClient) GetBucket(bucketName string) (bucket *Bucket, err error) {
 	var acl, cors, logging, lc, policy, website, encryption, createTime string
-	sqltext := "select bucketname,acl,cors,COALESCE(logging,\"\"),lc,uid,policy,website,COALESCE(encryption,\"\"),createtime,usages,versioning from buckets where bucketname=?;"
+	sqltext := "select bucketname,acl,cors,COALESCE(logging,null),lc,uid,policy,website,COALESCE(encryption,null),createtime,usages,versioning from buckets where bucketname=$1;"
 	bucket = new(Bucket)
 	err = t.Client.QueryRow(sqltext, bucketName).Scan(
 		&bucket.Name,
@@ -73,7 +73,7 @@ func (t *CockroachDBClient) GetBucket(bucketName string) (bucket *Bucket, err er
 }
 
 func (t *CockroachDBClient) GetBuckets() (buckets []Bucket, err error) {
-	sqltext := "select bucketname,acl,cors,COALESCE(logging,\"\"),lc,uid,policy,website,COALESCE(encryption,\"\"),createtime,usages,versioning from buckets;"
+	sqltext := "select bucketname,acl,cors,COALESCE(logging,null),lc,uid,policy,website,COALESCE(encryption,null),createtime,usages,versioning from buckets;"
 	rows, err := t.Client.Query(sqltext)
 	if err == sql.ErrNoRows {
 		err = nil
@@ -183,17 +183,17 @@ func (t *CockroachDBClient) ListObjects(bucketName, marker, verIdMarker, prefix,
 			if marker == "" {
 				sqltext = `select bucketname,name,version,nullversion,deletemarker 
 					from objects 
-					where bucketName=? 
+					where bucketName=$1 
 					order by bucketname,name,version 
-					limit ?`
+					limit $2`
 				rows, err = t.Client.Query(sqltext, bucketName, maxKeys)
 			} else {
 				sqltext = `select bucketname,name,version,nullversion,deletemarker 
 					from objects 
-					where bucketName=? 
-					and name >=? 
+					where bucketName=$1 
+					and name >=$2 
 					order by bucketname,name,version 
-					limit ?,?`
+					limit $3,$4`
 				rows, err = t.Client.Query(sqltext, bucketName, marker, objectNum[marker], objectNum[marker]+maxKeys)
 			}
 		} else { // prefix not empty
@@ -201,19 +201,19 @@ func (t *CockroachDBClient) ListObjects(bucketName, marker, verIdMarker, prefix,
 			if marker == "" {
 				sqltext = `select bucketname,name,version,nullversion,deletemarker 
 					from objects 
-					where bucketName=? 
-					and name like ?
+					where bucketName=$1 
+					and name like $2
 					order by bucketname,name,version 
-					limit ?`
+					limit $3`
 				rows, err = t.Client.Query(sqltext, bucketName, prefixPattern, maxKeys)
 			} else {
 				sqltext = `select bucketname,name,version,nullversion,deletemarker 
 					from objects 
-					where bucketName=? 
-					and name >=? 
-					and name like ?
+					where bucketName=$1 
+					and name >=$2 
+					and name like $3
 					order by bucketname,name,version 
-					limit ?,?`
+					limit $4,$5`
 				rows, err = t.Client.Query(sqltext, bucketName, marker, prefixPattern,
 					objectNum[marker], objectNum[marker]+maxKeys)
 			}
@@ -322,7 +322,7 @@ func (t *CockroachDBClient) ListObjects(bucketName, marker, verIdMarker, prefix,
 }
 
 func (t *CockroachDBClient) DeleteBucket(bucket Bucket) error {
-	sqltext := "delete from buckets where bucketname=?;"
+	sqltext := "delete from buckets where bucketname=$1;"
 	_, err := t.Client.Exec(sqltext, bucket.Name)
 	if err != nil {
 		return err
@@ -338,7 +338,7 @@ func (t *CockroachDBClient) UpdateUsage(bucketName string, size int64, tx DB) (e
 	if tx == nil {
 		tx = t.Client
 	}
-	sql := "update buckets set usages= usages + ? where bucketname=?;"
+	sql := "update buckets set usages= usages + $1 where bucketname=$2;"
 	_, err = tx.Exec(sql, size, bucketName)
 	return
 }

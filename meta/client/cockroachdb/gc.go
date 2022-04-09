@@ -2,10 +2,11 @@ package cockroachdb
 
 import (
 	"database/sql"
-	. "github.com/journeymidnight/yig/meta/types"
 	"math"
 	"strings"
 	"time"
+
+	. "github.com/journeymidnight/yig/meta/types"
 )
 
 //gc
@@ -32,7 +33,7 @@ func (t *CockroachDBClient) PutObjectToGarbageCollection(object *Object, tx DB) 
 	}
 	mtime := o.MTime.Format(TIME_LAYOUT_TIDB)
 	version := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
-	sqltext := "insert ignore into gc(bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes) values(?,?,?,?,?,?,?,?,?,?);"
+	sqltext := "insert ignore into gc(bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);"
 	_, err = tx.Exec(sqltext, o.BucketName, o.ObjectName, version, o.Location, o.Pool, o.ObjectId, o.Status, mtime, hasPart, o.TriedTimes)
 	if err != nil {
 		return err
@@ -53,14 +54,14 @@ func (t *CockroachDBClient) ScanGarbageCollection(limit int, startRowKey string)
 	var sqltext string
 	var rows *sql.Rows
 	if startRowKey == "" {
-		sqltext = "select bucketname,objectname,version from gc  order by bucketname,objectname,version limit ?;"
+		sqltext = "select bucketname,objectname,version from gc  order by bucketname,objectname,version limit $1;"
 		rows, err = t.Client.Query(sqltext, limit)
 	} else {
 		s := strings.Split(startRowKey, ObjectNameSeparator)
 		bucketname := s[0]
 		objectname := s[1]
 		version := s[2]
-		sqltext = "select bucketname,objectname,version from gc where bucketname>? or (bucketname=? and objectname>?) or (bucketname=? and objectname=? and version >= ?) limit ?;"
+		sqltext = "select bucketname,objectname,version from gc where bucketname>$1 or (bucketname=$2 and objectname>$3) or (bucketname=$4 and objectname=$5 and version >= $6) limit $7;"
 		rows, err = t.Client.Query(sqltext, bucketname, bucketname, objectname, bucketname, objectname, version, limit)
 	}
 	if err != nil {
@@ -104,13 +105,13 @@ func (t *CockroachDBClient) RemoveGarbageCollection(garbage GarbageCollection) (
 	}()
 
 	version := strings.Split(garbage.Rowkey, ObjectNameSeparator)[2]
-	sqltext := "delete from gc where bucketname=? and objectname=? and version=?;"
+	sqltext := "delete from gc where bucketname=$1 and objectname=$2 and version=$3;"
 	_, err = tx.Exec(sqltext, garbage.BucketName, garbage.ObjectName, version)
 	if err != nil {
 		return err
 	}
 	if len(garbage.Parts) > 0 {
-		sqltext := "delete from gcpart where bucketname=? and objectname=? and version=?;"
+		sqltext := "delete from gcpart where bucketname=$1 and objectname=$2 and version=$3;"
 		_, err := tx.Exec(sqltext, garbage.BucketName, garbage.ObjectName, version)
 		if err != nil {
 			return err
@@ -141,7 +142,7 @@ func (t *CockroachDBClient) PutFreezerToGarbageCollection(object *Freezer, tx DB
 	}
 	mtime := o.MTime.Format(TIME_LAYOUT_TIDB)
 	version := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
-	sqltext := "insert ignore into gc(bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes) values(?,?,?,?,?,?,?,?,?,?);"
+	sqltext := "insert ignore into gc(bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);"
 	_, err = tx.Exec(sqltext, o.BucketName, o.ObjectName, version, o.Location, o.Pool, o.ObjectId, o.Status, mtime, hasPart, o.TriedTimes)
 	if err != nil {
 		return err
@@ -158,7 +159,7 @@ func (t *CockroachDBClient) PutFreezerToGarbageCollection(object *Freezer, tx DB
 
 //util func
 func (t *CockroachDBClient) GetGarbageCollection(bucketName, objectName, version string) (gc GarbageCollection, err error) {
-	sqltext := "select bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes from gc where bucketname=? and objectname=? and version=?;"
+	sqltext := "select bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes from gc where bucketname=$1 and objectname=$2 and version=$3;"
 	var hasPart bool
 	var mtime string
 	var v string
@@ -192,7 +193,7 @@ func (t *CockroachDBClient) GetGarbageCollection(bucketName, objectName, version
 
 func getGcParts(bucketname, objectname, version string, cli *sql.DB) (parts map[int]*Part, err error) {
 	parts = make(map[int]*Part)
-	sqltext := "select partnumber,size,objectid,offset,etag,lastmodified,initializationvector from gcpart where bucketname=? and objectname=? and version=?;"
+	sqltext := "select partnumber,size,objectid,offset,etag,lastmodified,initializationvector from gcpart where bucketname=$1 and objectname=$2 and version=$3;"
 	rows, err := cli.Query(sqltext, bucketname, objectname, version)
 	if err != nil {
 		return

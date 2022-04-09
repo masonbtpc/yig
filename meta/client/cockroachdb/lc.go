@@ -8,7 +8,7 @@ import (
 )
 
 func (t *CockroachDBClient) PutBucketToLifeCycle(lifeCycle LifeCycle) error {
-	sqltext := "insert into lifecycle(bucketname,status) values (?,?);"
+	sqltext := "insert into lifecycle(bucketname,status) values ($1,$2);"
 	_, err := t.Client.Exec(sqltext, lifeCycle.BucketName, lifeCycle.Status)
 	if err != nil {
 		helper.Logger.Error("Failed to execute:", sqltext, "err:", err)
@@ -18,7 +18,7 @@ func (t *CockroachDBClient) PutBucketToLifeCycle(lifeCycle LifeCycle) error {
 }
 
 func (t *CockroachDBClient) RemoveBucketFromLifeCycle(bucket Bucket) error {
-	sqltext := "delete from lifecycle where bucketname=?;"
+	sqltext := "delete from lifecycle where bucketname=$1;"
 	_, err := t.Client.Exec(sqltext, bucket.Name)
 	if err != nil {
 		helper.Logger.Error("Failed to execute:", sqltext, "err:", err)
@@ -29,7 +29,7 @@ func (t *CockroachDBClient) RemoveBucketFromLifeCycle(bucket Bucket) error {
 
 func (t *CockroachDBClient) ScanLifeCycle(limit int, marker string) (result ScanLifeCycleResult, err error) {
 	result.Truncated = false
-	sqltext := "select bucketname,status from lifecycle where bucketname > ? limit ?;"
+	sqltext := "select bucketname,status from lifecycle where bucketname > $1 limit $2;"
 	rows, err := t.Client.Query(sqltext, marker, limit)
 	if err == sql.ErrNoRows {
 		helper.Logger.Error("Failed in sql.ErrNoRows:", sqltext, "err:", err)

@@ -19,12 +19,12 @@ func (t *CockroachDBClient) GetObject(bucketName, objectName, version string) (o
 
 	var row *sql.Row
 	sqltext := "select bucketname,name,version,location,pool,ownerid,size,objectid,lastmodifiedtime,etag,contenttype," +
-		"customattributes,acl,nullversion,deletemarker,ssetype,encryptionkey,initializationvector,type,storageclass from objects where bucketname=? and name=? "
+		"customattributes,acl,nullversion,deletemarker,ssetype,encryptionkey,initializationvector,type,storageclass from objects where bucketname=$1 and name=$2 "
 	if version == "" {
 		sqltext += "order by bucketname,name,version limit 1;"
 		row = t.Client.QueryRow(sqltext, bucketName, objectName)
 	} else {
-		sqltext += "and version=?;"
+		sqltext += "and version=$1;"
 		row = t.Client.QueryRow(sqltext, bucketName, objectName, version)
 	}
 	object = &Object{}
@@ -87,7 +87,7 @@ func (t *CockroachDBClient) GetObject(bucketName, objectName, version string) (o
 }
 
 func (t *CockroachDBClient) GetAllObject(bucketName, objectName, version string) (object []*Object, err error) {
-	sqltext := "select version from objects where bucketname=? and name=?;"
+	sqltext := "select version from objects where bucketname=$1 and name=$2;"
 	var versions []string
 	rows, err := t.Client.Query(sqltext, bucketName, objectName)
 	if err != nil {
@@ -201,7 +201,7 @@ func (t *CockroachDBClient) UpdateObject(object *Object, tx DB) (err error) {
 
 	v := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 	version := strconv.FormatUint(v, 10)
-	sqltext := "delete from objectpart where objectname=? and bucketname=? and version=?;"
+	sqltext := "delete from objectpart where objectname=$1 and bucketname=$2 and version=$3;"
 	_, err = tx.Exec(sqltext, object.Name, object.BucketName, version)
 	if err != nil {
 		return err
@@ -239,12 +239,12 @@ func (t *CockroachDBClient) DeleteObject(object *Object, tx DB) (err error) {
 
 	v := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 	version := strconv.FormatUint(v, 10)
-	sqltext := "delete from objects where name=? and bucketname=? and version=?;"
+	sqltext := "delete from objects where name=$1 and bucketname=$2 and version=$3;"
 	_, err = tx.Exec(sqltext, object.Name, object.BucketName, version)
 	if err != nil {
 		return err
 	}
-	sqltext = "delete from objectpart where objectname=? and bucketname=? and version=?;"
+	sqltext = "delete from objectpart where objectname=$1 and bucketname=$2 and version=$3;"
 	_, err = tx.Exec(sqltext, object.Name, object.BucketName, version)
 	if err != nil {
 		return err
@@ -255,7 +255,7 @@ func (t *CockroachDBClient) DeleteObject(object *Object, tx DB) (err error) {
 //util function
 func getParts(bucketName, objectName string, version uint64, cli *sql.DB) (parts map[int]*Part, err error) {
 	parts = make(map[int]*Part)
-	sqltext := "select partnumber,size,objectid,offset,etag,lastmodified,initializationvector from objectpart where bucketname=? and objectname=? and version=?;"
+	sqltext := "select partnumber,size,objectid,offset,etag,lastmodified,initializationvector from objectpart where bucketname=$1 and objectname=$2 and version=$3;"
 	rows, err := cli.Query(sqltext, bucketName, objectName, version)
 	if err != nil {
 		return

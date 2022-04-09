@@ -5,7 +5,7 @@ import (
 )
 
 func (t *CockroachDBClient) GetUserBuckets(userId string) (buckets []string, err error) {
-	sqltext := "select bucketname from users where userid=?;"
+	sqltext := "select bucketname from users where userid=$1;"
 	rows, err := t.Client.Query(sqltext, userId)
 	if err == sql.ErrNoRows {
 		err = nil
@@ -27,13 +27,13 @@ func (t *CockroachDBClient) GetUserBuckets(userId string) (buckets []string, err
 }
 
 func (t *CockroachDBClient) AddBucketForUser(bucketName, userId string) (err error) {
-	sql := "insert into users(userid,bucketname) values(?,?)"
+	sql := "insert into users(userid,bucketname) values($2,$3)"
 	_, err = t.Client.Exec(sql, userId, bucketName)
 	return
 }
 
 func (t *CockroachDBClient) RemoveBucketForUser(bucketName string, userId string) (err error) {
-	sql := "delete from users where userid=? and bucketname=?;"
+	sql := "delete from users where userid=$1 and bucketname=$2;"
 	_, err = t.Client.Exec(sql, userId, bucketName)
 	return
 }

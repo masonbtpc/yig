@@ -30,7 +30,7 @@ func (t *CockroachDBClient) GetMultipart(bucketName, objectName, uploadId string
 	}
 	uploadTime = math.MaxUint64 - uploadTime
 	sqltext := "select bucketname,objectname,uploadtime,initiatorid,ownerid,contenttype,location,pool,acl,sserequest," +
-		"encryption,COALESCE(cipher,\"\"),attrs,storageclass from multiparts where bucketname=? and objectname=? and uploadtime=?;"
+		"encryption,COALESCE(cipher,\"\"),attrs,storageclass from multiparts where bucketname=$1 and objectname=$2 and uploadtime=$3;"
 	var initialTime uint64
 	var acl, sseRequest, attrs string
 	err = t.Client.QueryRow(sqltext, bucketName, objectName, uploadTime).Scan(
@@ -72,7 +72,7 @@ func (t *CockroachDBClient) GetMultipart(bucketName, objectName, uploadId string
 		return
 	}
 
-	sqltext = "select partnumber,size,objectid,offset,etag,lastmodified,initializationvector from multipartpart where bucketname=? and objectname=? and uploadtime=?;"
+	sqltext = "select partnumber,size,objectid,offset,etag,lastmodified,initializationvector from multipartpart where bucketname=$1 and objectname=$2 and uploadtime=$3;"
 	rows, err := t.Client.Query(sqltext, bucketName, objectName, uploadTime)
 	if err != nil {
 		return
@@ -109,7 +109,7 @@ func (t *CockroachDBClient) CreateMultipart(multipart Multipart) (err error) {
 	sseRequest, _ := json.Marshal(m.SseRequest)
 	attrs, _ := json.Marshal(m.Attrs)
 	sqltext := "insert into multiparts(bucketname,objectname,uploadtime,initiatorid,ownerid,contenttype,location,pool,acl,sserequest,encryption,cipher,attrs,storageclass) " +
-		"values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)"
 	_, err = t.Client.Exec(sqltext, multipart.BucketName, multipart.ObjectName, uploadtime, m.InitiatorId, m.OwnerId, m.ContentType, m.Location, m.Pool, acl, sseRequest, m.EncryptionKey, m.CipherKey, attrs, m.StorageClass)
 	return
 }
@@ -126,7 +126,7 @@ func (t *CockroachDBClient) PutObjectPart(multipart *Multipart, part *Part, tx D
 	}
 	lastModified := lastt.Format(TIME_LAYOUT_TIDB)
 	sqltext := "insert into multipartpart(partnumber,size,objectid,offset,etag,lastmodified,initializationvector,bucketname,objectname,uploadtime) " +
-		"values(?,?,?,?,?,?,?,?,?,?)"
+		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)"
 	_, err = tx.Exec(sqltext, part.PartNumber, part.Size, part.ObjectId, part.Offset, part.Etag, lastModified, part.InitializationVector, multipart.BucketName, multipart.ObjectName, uploadtime)
 	return
 }
@@ -147,12 +147,12 @@ func (t *CockroachDBClient) DeleteMultipart(multipart *Multipart, tx DB) (err er
 		}()
 	}
 	uploadtime := math.MaxUint64 - uint64(multipart.InitialTime.UnixNano())
-	sqltext := "delete from multiparts where bucketname=? and objectname=? and uploadtime=?;"
+	sqltext := "delete from multiparts where bucketname=$1 and objectname=$2 and uploadtime=$3;"
 	_, err = tx.Exec(sqltext, multipart.BucketName, multipart.ObjectName, uploadtime)
 	if err != nil {
 		return
 	}
-	sqltext = "delete from multipartpart where bucketname=? and objectname=? and uploadtime=?;"
+	sqltext = "delete from multipartpart where bucketname=$1 and objectname=$2 and uploadtime=$3;"
 	_, err = tx.Exec(sqltext, multipart.BucketName, multipart.ObjectName, uploadtime)
 	return err
 }
@@ -180,10 +180,10 @@ func (t *CockroachDBClient) ListMultipartUploads(bucketName, keyMarker, uploadId
 		var sqltext string
 		var rows *sql.Rows
 		if currentMarker == "" {
-			sqltext = "select objectname,uploadtime,initiatorid,ownerid,storageclass from multiparts where bucketName=? order by bucketname,objectname,uploadtime limit ?,?;"
+			sqltext = "select objectname,uploadtime,initiatorid,ownerid,storageclass from multiparts where bucketName=$1 order by bucketname,objectname,uploadtime limit $2,$3;"
 			rows, err = t.Client.Query(sqltext, bucketName, objnum[currentMarker], objnum[currentMarker]+maxUploads)
 		} else {
-			sqltext = "select objectname,uploadtime,initiatorid,ownerid,storageclass from multiparts where bucketName=? and objectname>=? order by bucketname,objectname,uploadtime limit ?,?;"
+			sqltext = "select objectname,uploadtime,initiatorid,ownerid,storageclass from multiparts where bucketName=$1 and objectname>=$2 order by bucketname,objectname,uploadtime limit $3,$4;"
 			rows, err = t.Client.Query(sqltext, bucketName, currentMarker, objnum[currentMarker], objnum[currentMarker]+maxUploads)
 		}
 		if err != nil {

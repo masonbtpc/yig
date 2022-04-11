@@ -48,13 +48,12 @@ type Multipart struct {
 	Parts       map[int]*Part
 }
 
-
 func (m *Multipart) GetUploadId() (string, error) {
 	if m.UploadId != "" {
 		return m.UploadId, nil
 	}
 	if m.InitialTime.IsZero() {
-		return "", errors.New("Zero value InitialTime for Multipart")
+		return "", errors.New("zero value InitialTime for Multipart")
 	}
 	m.UploadId = getMultipartUploadId(m.InitialTime)
 	return m.UploadId, nil
@@ -87,21 +86,21 @@ func valuesForParts(parts map[int]*Part) (values map[string][]byte, err error) {
 
 func (p *Part) GetCreateSql(bucketname, objectname, version string) (string, []interface{}) {
 	sql := "insert into objectpart(partnumber,size,objectid,offset,etag,lastmodified,initializationvector,bucketname,objectname,version) " +
-		"values(?,?,?,?,?,?,?,?,?,?)"
+		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)"
 	args := []interface{}{p.PartNumber, p.Size, p.ObjectId, p.Offset, p.Etag, p.LastModified, p.InitializationVector, bucketname, objectname, version}
 	return sql, args
 }
 
 func (p *Part) GetCreateGcSql(bucketname, objectname string, version uint64) (string, []interface{}) {
 	sql := "insert into gcpart(partnumber,size,objectid,offset,etag,lastmodified,initializationvector,bucketname,objectname,version) " +
-		"values(?,?,?,?,?,?,?,?,?,?)"
+		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)"
 	args := []interface{}{p.PartNumber, p.Size, p.ObjectId, p.Offset, p.Etag, p.LastModified, p.InitializationVector, bucketname, objectname, version}
 	return sql, args
 }
 
 func (o *Object) GetUpdateObjectPartNameSql(sourceObject string) (string, []interface{}) {
 	version := math.MaxUint64 - uint64(o.LastModifiedTime.UnixNano())
-	sql := "update objectpart set objectname=? where bucketname=? and objectname=? and version=?"
+	sql := "update objectpart set objectname=$1 where bucketname=$2 and objectname=$3 and version=$4"
 	args := []interface{}{o.Name, o.BucketName, sourceObject, version}
 	return sql, args
 }

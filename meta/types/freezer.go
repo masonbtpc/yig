@@ -22,7 +22,7 @@ type Freezer struct {
 
 func (o *Freezer) GetCreateSql() (string, []interface{}) {
 	// TODO Multi-version control
-	lastModifiedTime := o.LastModifiedTime.Format(TIME_LAYOUT_TIDB)
+	lastModifiedTime := o.LastModifiedTime.Format(CREATE_TIME_LAYOUT)
 	sql := "insert into restoreobjects(bucketname,objectname,status,lifetime,lastmodifiedtime) values($1,$2,$3,$4,$5)"
 	args := []interface{}{o.BucketName, o.Name, o.Status, o.LifeTime, lastModifiedTime}
 	return sql, args
@@ -31,7 +31,7 @@ func (o *Freezer) GetCreateSql() (string, []interface{}) {
 func (o *Freezer) GetUpdateSql(status Status) (string, []interface{}) {
 	// TODO Multi-version control
 	// version := math.MaxUint64 - uint64(o.LastModifiedTime.UnixNano())
-	lastModifiedTime := o.LastModifiedTime.Format(TIME_LAYOUT_TIDB)
+	lastModifiedTime := o.LastModifiedTime.Format(CREATE_TIME_LAYOUT)
 	sql := "update restoreobjects set status=$1,lastmodifiedtime=$2,location=$3,pool=$4," +
 		"ownerid=$5,size=$6,etag=$7 where bucketname=$8 and objectname=$9 and status=$10"
 	args := []interface{}{status, lastModifiedTime, o.Location, o.Pool, o.OwnerId, o.Size, o.Etag, o.BucketName, o.Name, o.Status}

@@ -19,6 +19,14 @@ package api
 import (
 	"encoding/hex"
 	"encoding/xml"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"sort"
+	"strconv"
+	"strings"
+
 	"github.com/gorilla/mux"
 	. "github.com/journeymidnight/yig/api/datatype"
 	"github.com/journeymidnight/yig/api/datatype/policy"
@@ -28,13 +36,6 @@ import (
 	"github.com/journeymidnight/yig/iam/common"
 	meta "github.com/journeymidnight/yig/meta/types"
 	"github.com/journeymidnight/yig/signature"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"sort"
-	"strconv"
-	"strings"
 )
 
 // supportedGetReqParams - supported request parameters for GET presigned request.
@@ -899,6 +900,8 @@ func (api ObjectAPIHandlers) PutObjectHandler(w http.ResponseWriter, r *http.Req
 	var result PutObjectResult
 	result, err = api.ObjectAPI.PutObject(bucketName, objectName, credential, size, dataReadCloser,
 		metadata, acl, sseRequest, storageClass)
+	logger.Info("Value of result:", result)
+	logger.Info("value of error:", err)
 	if err != nil {
 		logger.Error("Unable to create object", objectName, "error:", err)
 		WriteErrorResponse(w, r, err)

@@ -89,7 +89,7 @@ func (t *CockroachDBClient) GetMultipart(bucketName, objectName, uploadId string
 			&p.LastModified,
 			&p.InitializationVector,
 		)
-		ts, e := time.Parse(TIME_LAYOUT_TIDB, p.LastModified)
+		ts, e := time.Parse(CREATE_TIME_LAYOUT, p.LastModified)
 		if e != nil {
 			return
 		}
@@ -124,7 +124,7 @@ func (t *CockroachDBClient) PutObjectPart(multipart *Multipart, part *Part, tx D
 	if err != nil {
 		return
 	}
-	lastModified := lastt.Format(TIME_LAYOUT_TIDB)
+	lastModified := lastt.Format(CREATE_TIME_LAYOUT)
 	sqltext := "insert into multipartpart(partnumber,size,objectid,offset,etag,lastmodified,initializationvector,bucketname,objectname,uploadtime) " +
 		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)"
 	_, err = tx.Exec(sqltext, part.PartNumber, part.Size, part.ObjectId, part.Offset, part.Etag, lastModified, part.InitializationVector, multipart.BucketName, multipart.ObjectName, uploadtime)

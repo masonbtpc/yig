@@ -37,7 +37,7 @@ func (t *CockroachDBClient) GetBucket(bucketName string) (bucket *Bucket, err er
 	} else if err != nil {
 		return
 	}
-	bucket.CreateTime, err = time.Parse(TIME_LAYOUT_TIDB, createTime)
+	bucket.CreateTime, err = time.Parse(CREATE_TIME_LAYOUT, createTime)
 	if err != nil {
 		return
 	}
@@ -102,7 +102,7 @@ func (t *CockroachDBClient) GetBuckets() (buckets []Bucket, err error) {
 		if err != nil {
 			return
 		}
-		tmp.CreateTime, err = time.Parse(TIME_LAYOUT_TIDB, createTime)
+		tmp.CreateTime, err = time.Parse(CREATE_TIME_LAYOUT, createTime)
 		if err != nil {
 			return
 		}

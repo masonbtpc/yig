@@ -40,7 +40,7 @@ func (t *CockroachDBClient) GetFreezer(bucketName, objectName, version string) (
 		return
 	}
 	local, _ := time.LoadLocation("Local")
-	freezer.LastModifiedTime, _ = time.ParseInLocation(TIME_LAYOUT_TIDB, lastmodifiedtime, local)
+	freezer.LastModifiedTime, _ = time.ParseInLocation(CREATE_TIME_LAYOUT, lastmodifiedtime, local)
 	freezer.Parts, err = getFreezerParts(freezer.BucketName, freezer.Name, t.Client)
 	//build simple index for multipart
 	if len(freezer.Parts) != 0 {

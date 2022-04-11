@@ -31,7 +31,7 @@ func (t *CockroachDBClient) PutObjectToGarbageCollection(object *Object, tx DB) 
 	if len(o.Parts) > 0 {
 		hasPart = true
 	}
-	mtime := o.MTime.Format(TIME_LAYOUT_TIDB)
+	mtime := o.MTime.Format(CREATE_TIME_LAYOUT)
 	version := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 	sqltext := "insert ignore into gc(bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);"
 	_, err = tx.Exec(sqltext, o.BucketName, o.ObjectName, version, o.Location, o.Pool, o.ObjectId, o.Status, mtime, hasPart, o.TriedTimes)
@@ -140,7 +140,7 @@ func (t *CockroachDBClient) PutFreezerToGarbageCollection(object *Freezer, tx DB
 	if len(o.Parts) > 0 {
 		hasPart = true
 	}
-	mtime := o.MTime.Format(TIME_LAYOUT_TIDB)
+	mtime := o.MTime.Format(CREATE_TIME_LAYOUT)
 	version := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 	sqltext := "insert ignore into gc(bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);"
 	_, err = tx.Exec(sqltext, o.BucketName, o.ObjectName, version, o.Location, o.Pool, o.ObjectId, o.Status, mtime, hasPart, o.TriedTimes)
@@ -175,7 +175,7 @@ func (t *CockroachDBClient) GetGarbageCollection(bucketName, objectName, version
 		&hasPart,
 		&gc.TriedTimes,
 	)
-	gc.MTime, err = time.Parse(TIME_LAYOUT_TIDB, mtime)
+	gc.MTime, err = time.Parse(CREATE_TIME_LAYOUT, mtime)
 	if err != nil {
 		return
 	}

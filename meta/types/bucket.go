@@ -71,7 +71,7 @@ func (b Bucket) GetCreateSql() (string, []interface{}) {
 	bucket_policy, _ := json.Marshal(b.Policy)
 	website, _ := json.Marshal(b.Website)
 	encryption, _ := json.Marshal(b.Encryption)
-	createTime := b.CreateTime.Format(TIME_LAYOUT_TIDB)
+	createTime := b.CreateTime.Format(CREATE_TIME_LAYOUT)
 	sql := "insert into buckets(bucketname,acl,cors,logging,lc,uid,policy,website,encryption,createtime,usages,versioning) " +
 		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12);"
 	args := []interface{}{b.Name, acl, cors, logging, lc, b.OwnerId, bucket_policy, website, encryption, createTime, b.Usage, b.Versioning}

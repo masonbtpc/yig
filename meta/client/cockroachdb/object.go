@@ -9,6 +9,7 @@ import (
 	"time"
 
 	. "github.com/journeymidnight/yig/error"
+	"github.com/journeymidnight/yig/helper"
 	. "github.com/journeymidnight/yig/meta/types"
 	"github.com/xxtea/xxtea-go/xxtea"
 )
@@ -174,6 +175,7 @@ func (t *CockroachDBClient) PutObject(object *Object, tx DB) (err error) {
 		version := strconv.FormatUint(v, 10)
 		for _, p := range object.Parts {
 			psql, args := p.GetCreateSql(object.BucketName, object.Name, version)
+			helper.Logger.Info("Called psql and args for PutObject:", psql, args)
 			_, err = tx.Exec(psql, args...)
 			if err != nil {
 				return err

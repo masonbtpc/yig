@@ -144,7 +144,7 @@ func (o *Object) GetCreateSql() (string, []interface{}) {
 	version := math.MaxUint64 - uint64(o.LastModifiedTime.UnixNano())
 	customAttributes, _ := json.Marshal(o.CustomAttributes)
 	acl, _ := json.Marshal(o.ACL)
-	lastModifiedTime := o.LastModifiedTime.Format(TIME_LAYOUT_TIDB)
+	lastModifiedTime := o.LastModifiedTime.Format(CREATE_TIME_LAYOUT)
 	sql := "insert into objects(bucketname,name,version,location,pool,ownerid,size,objectid,lastmodifiedtime,etag," +
 		"contenttype,customattributes,acl,nullversion,deletemarker,ssetype,encryptionkey,initializationvector,type,storageclass) " +
 		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)"
@@ -156,7 +156,7 @@ func (o *Object) GetCreateSql() (string, []interface{}) {
 
 func (o *Object) GetAppendSql() (string, []interface{}) {
 	version := math.MaxUint64 - uint64(o.LastModifiedTime.UnixNano())
-	lastModifiedTime := o.LastModifiedTime.Format(TIME_LAYOUT_TIDB)
+	lastModifiedTime := o.LastModifiedTime.Format(CREATE_TIME_LAYOUT)
 	sql := "update objects set lastmodifiedtime=$1, size=$2, version=$3 where bucketname=$4 and name=$5"
 	args := []interface{}{lastModifiedTime, o.Size, version, o.BucketName, o.Name}
 	return sql, args

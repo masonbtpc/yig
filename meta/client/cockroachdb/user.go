@@ -27,7 +27,7 @@ func (t *CockroachDBClient) GetUserBuckets(userId string) (buckets []string, err
 }
 
 func (t *CockroachDBClient) AddBucketForUser(bucketName, userId string) (err error) {
-	sql := "insert into users(userid,bucketname) values($2,$3)"
+	sql := "insert into users(userid,bucketname) values($1,$2)"
 	_, err = t.Client.Exec(sql, userId, bucketName)
 	return
 }

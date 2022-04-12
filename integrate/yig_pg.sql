@@ -63,7 +63,7 @@ ALTER TABLE cluster OWNER TO yig;
 CREATE TABLE gc (
     bucketname character varying(255) DEFAULT NULL,
     objectname character varying(255) DEFAULT NULL,
-    version numeric DEFAULT NULL,
+    version decimal(20) DEFAULT NULL,
     location character varying(255) DEFAULT NULL,
     pool character varying(255) DEFAULT NULL,
     objectid character varying(255) DEFAULT NULL,
@@ -90,7 +90,7 @@ CREATE TABLE gcpart (
     initializationvector bytea DEFAULT NULL,
     bucketname character varying(255) DEFAULT NULL,
     objectname character varying(255) DEFAULT NULL,
-    version numeric DEFAULT NULL
+    version decimal(20) DEFAULT NULL
 );
 
 
@@ -166,7 +166,7 @@ CREATE TABLE objectpart (
     initializationvector bytea DEFAULT NULL,
     bucketname character varying(255) DEFAULT NULL,
     objectname character varying(255) DEFAULT NULL,
-    version character varying(255) DEFAULT NULL
+    version decimal(20) DEFAULT NULL
 );
 
 
@@ -227,7 +227,7 @@ CREATE TABLE restoreobjectpart (
     initializationvector bytea DEFAULT NULL,
     bucketname character varying(255) DEFAULT NULL,
     objectname character varying(255) DEFAULT NULL,
-    version numeric DEFAULT NULL
+    version decimal(20) DEFAULT NULL
 );
 
 
@@ -240,7 +240,7 @@ ALTER TABLE restoreobjectpart OWNER TO yig;
 CREATE TABLE restoreobjects (
     bucketname character varying(255) DEFAULT NULL,
     objectname character varying(255) DEFAULT NULL,
-    version numeric DEFAULT NULL,
+    version decimal(20) DEFAULT NULL,
     status smallint DEFAULT '0'::smallint,
     lifetime smallint DEFAULT '1'::smallint,
     lastmodifiedtime timestamp with time zone DEFAULT NULL,

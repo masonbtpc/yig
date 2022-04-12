@@ -257,7 +257,7 @@ func (t *CockroachDBClient) DeleteObject(object *Object, tx DB) (err error) {
 //util function
 func getParts(bucketName, objectName string, version uint64, cli *sql.DB) (parts map[int]*Part, err error) {
 	parts = make(map[int]*Part)
-	sqltext := "select partnumber,size,objectid,offset,etag,lastmodified,initializationvector from objectpart where bucketname=$1 and objectname=$2 and version=$3;"
+	sqltext := "select partnumber,size,objectid,'offset',etag,lastmodified,initializationvector from objectpart where bucketname=$1 and objectname=$2 and version=$3;"
 	rows, err := cli.Query(sqltext, bucketName, objectName, version)
 	if err != nil {
 		return

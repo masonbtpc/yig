@@ -12,11 +12,10 @@ SET row_security = off;
 --
 -- Name: yig; Type: SCHEMA; Schema: -; Owner: yig
 --
-CREATE DATABASE yig;
 
 CREATE USER yig;
+CREATE DATABASE yig;
 GRANT ALL ON DATABASE yig TO yig;
-
 CREATE SCHEMA yig;
 ALTER SCHEMA yig OWNER TO yig;
 
@@ -28,16 +27,16 @@ SET default_tablespace = '';
 
 CREATE TABLE buckets (
     bucketname character varying(255) DEFAULT ''::character varying NOT NULL,
-    acl json,
-    cors json,
+    acl json DEFAULT NULL,
+    cors json DEFAULT NULL,
     logging json DEFAULT 'null'::json NOT NULL,
-    lc json,
-    uid character varying(255),
-    policy json,
-    website json,
-    encryption json,
-    createtime timestamp with time zone,
-    usages bigint,
+    lc json DEFAULT NULL,
+    uid character varying(255) DEFAULT NULL,
+    policy json DEFAULT NULL,
+    website json DEFAULT NULL,
+    encryption json DEFAULT NULL,
+    createtime timestamp with time zone DEFAULT NULL,
+    usages bigint DEFAULT NULL,
     versioning character varying(255)
 );
 
@@ -49,9 +48,9 @@ ALTER TABLE buckets OWNER TO yig;
 --
 
 CREATE TABLE cluster (
-    fsid character varying(255),
-    pool character varying(255),
-    weight bigint
+    fsid character varying(255) DEFAULT NULL,
+    pool character varying(255) DEFAULT NULL,
+    weight bigint DEFAULT NULL
 );
 
 
@@ -62,16 +61,16 @@ ALTER TABLE cluster OWNER TO yig;
 --
 
 CREATE TABLE gc (
-    bucketname character varying(255),
-    objectname character varying(255),
-    version numeric,
-    location character varying(255),
-    pool character varying(255),
-    objectid character varying(255),
-    status character varying(255),
-    mtime timestamp with time zone,
-    part boolean,
-    triedtimes bigint
+    bucketname character varying(255) DEFAULT NULL,
+    objectname character varying(255) DEFAULT NULL,
+    version numeric DEFAULT NULL,
+    location character varying(255) DEFAULT NULL,
+    pool character varying(255) DEFAULT NULL,
+    objectid character varying(255) DEFAULT NULL,
+    status character varying(255) DEFAULT NULL,
+    mtime timestamp with time zone DEFAULT NULL,
+    part smallint DEFAULT NULL,
+    triedtimes bigint DEFAULT NULL
 );
 
 
@@ -82,16 +81,16 @@ ALTER TABLE gc OWNER TO yig;
 --
 
 CREATE TABLE gcpart (
-    partnumber bigint,
-    size bigint,
-    objectid character varying(255),
-    "offset" bigint,
-    etag character varying(255),
-    lastmodified timestamp with time zone,
-    initializationvector bytea,
-    bucketname character varying(255),
-    objectname character varying(255),
-    version numeric
+    partnumber bigint DEFAULT NULL,
+    size bigint DEFAULT NULL,
+    objectid character varying(255) DEFAULT NULL,
+    "offset" bigint DEFAULT NULL,
+    etag character varying(255) DEFAULT NULL,
+    lastmodified timestamp with time zone DEFAULT NULL,
+    initializationvector bytea DEFAULT NULL,
+    bucketname character varying(255) DEFAULT NULL,
+    objectname character varying(255) DEFAULT NULL,
+    version numeric DEFAULT NULL
 );
 
 
@@ -102,8 +101,8 @@ ALTER TABLE gcpart OWNER TO yig;
 --
 
 CREATE TABLE lifecycle (
-    bucketname character varying(255),
-    status character varying(255)
+    bucketname character varying(255) DEFAULT NULL,
+    status character varying(255) DEFAULT NULL
 );
 
 
@@ -114,16 +113,16 @@ ALTER TABLE lifecycle OWNER TO yig;
 --
 
 CREATE TABLE multipartpart (
-    partnumber bigint,
-    size bigint,
+    partnumber bigint DEFAULT NULL,
+    size bigint DEFAULT NULL,
     objectid character varying(255),
-    "offset" bigint,
-    etag character varying(255),
-    lastmodified timestamp with time zone,
-    initializationvector bytea,
-    bucketname character varying(255),
-    objectname character varying(255),
-    uploadtime numeric
+    "offset" bigint DEFAULT NULL,
+    etag character varying(255) DEFAULT NULL,
+    lastmodified timestamp with time zone DEFAULT NULL, 
+    initializationvector bytea DEFAULT NULL,
+    bucketname character varying(255) DEFAULT NULL,
+    objectname character varying(255) DEFAULT NULL,
+    uploadtime numeric DEFAULT NULL
 );
 
 
@@ -134,20 +133,20 @@ ALTER TABLE multipartpart OWNER TO yig;
 --
 
 CREATE TABLE multiparts (
-    bucketname character varying(255),
-    objectname character varying(255),
-    uploadtime numeric,
-    initiatorid character varying(255),
-    ownerid character varying(255),
-    contenttype character varying(255),
-    location character varying(255),
-    pool character varying(255),
-    acl json,
-    sserequest json,
-    encryption bytea,
-    cipher bytea,
-    attrs json,
-    storageclass boolean DEFAULT false
+    bucketname character varying(255) DEFAULT NULL,
+    objectname character varying(255) DEFAULT NULL,
+    uploadtime numeric DEFAULT NULL,
+    initiatorid character varying(255) DEFAULT NULL,
+    ownerid character varying(255) DEFAULT NULL,
+    contenttype character varying(255) DEFAULT NULL,
+    location character varying(255) DEFAULT NULL,
+    pool character varying(255) DEFAULT NULL,
+    acl json DEFAULT NULL,
+    sserequest json DEFAULT NULL,
+    encryption bytea DEFAULT NULL,
+    cipher bytea DEFAULT NULL,
+    attrs json DEFAULT NULL,
+    storageclass smallint DEFAULT '0'::smallint 
 );
 
 
@@ -158,16 +157,16 @@ ALTER TABLE multiparts OWNER TO yig;
 --
 
 CREATE TABLE objectpart (
-    partnumber bigint,
-    size bigint,
-    objectid character varying(255),
-    "offset" bigint,
-    etag character varying(255),
-    lastmodified timestamp with time zone,
-    initializationvector bytea,
-    bucketname character varying(255),
-    objectname character varying(255),
-    version character varying(255)
+    partnumber bigint DEFAULT NULL,
+    size bigint DEFAULT NULL,
+    objectid character varying(255) DEFAULT NULL,
+    "offset" bigint DEFAULT NULL,
+    etag character varying(255) DEFAULT NULL,
+    lastmodified timestamp with time zone DEFAULT NULL,
+    initializationvector bytea DEFAULT NULL,
+    bucketname character varying(255) DEFAULT NULL,
+    objectname character varying(255) DEFAULT NULL,
+    version character varying(255) DEFAULT NULL
 );
 
 
@@ -176,30 +175,28 @@ ALTER TABLE objectpart OWNER TO yig;
 --
 -- Name: objects; Type: TABLE; Schema: yig; Owner: yig
 --
-
 CREATE TABLE objects (
-    bucketname character varying(255),
-    name character varying(255),
-    version numeric,
-    location character varying(255),
-    pool character varying(255),
-    ownerid character varying(255),
-    size bigint,
-    objectid character varying(255),
-    lastmodifiedtime timestamp with time zone,
-    etag character varying(255),
-    contenttype character varying(255),
-    customattributes json,
-    acl json,
-    nullversion boolean,
-    deletemarker boolean,
-    ssetype character varying(255),
-    encryptionkey bytea,
-    initializationvector bytea,
-    type boolean DEFAULT false,
-    storageclass boolean DEFAULT false
+    bucketname character varying(255) DEFAULT NULL,
+    name character varying(255) DEFAULT NULL,
+    version decimal(20) DEFAULT NULL,
+    location character varying(255) DEFAULT NULL,
+    pool character varying(255) DEFAULT NULL,
+    ownerid character varying(255) DEFAULT NULL,
+    size bigint DEFAULT NULL,
+    objectid character varying(255) DEFAULT NULL,
+    lastmodifiedtime timestamp with time zone DEFAULT NULL,
+    etag character varying(255) DEFAULT NULL,
+    contenttype character varying(255) DEFAULT NULL,
+    customattributes json DEFAULT NULL,
+    acl json DEFAULT NULL,
+    nullversion boolean DEFAULT NULL,
+    deletemarker boolean DEFAULT NULL,
+    ssetype character varying(255) DEFAULT NULL,
+    encryptionkey bytea DEFAULT NULL,
+    initializationvector bytea DEFAULT NULL,
+    type smallint DEFAULT '0'::smallint,
+    storageclass smallint DEFAULT '0'::smallint
 );
-
 
 ALTER TABLE objects OWNER TO yig;
 
@@ -208,9 +205,9 @@ ALTER TABLE objects OWNER TO yig;
 --
 
 CREATE TABLE objmap (
-    bucketname character varying(255),
-    objectname character varying(255),
-    nullvernum bigint
+    bucketname character varying(255) DEFAULT NULL,
+    objectname character varying(255) DEFAULT NULL,
+    nullvernum bigint DEFAULT NULL
 );
 
 
@@ -221,16 +218,16 @@ ALTER TABLE objmap OWNER TO yig;
 --
 
 CREATE TABLE restoreobjectpart (
-    partnumber bigint,
-    size bigint,
-    objectid character varying(255),
-    "offset" bigint,
-    etag character varying(255),
-    lastmodified timestamp with time zone,
-    initializationvector bytea,
-    bucketname character varying(255),
-    objectname character varying(255),
-    version numeric
+    partnumber bigint DEFAULT NULL,
+    size bigint DEFAULT NULL,
+    objectid character varying(255) DEFAULT NULL,
+    "offset" bigint DEFAULT NULL,
+    etag character varying(255) DEFAULT NULL,
+    lastmodified timestamp with time zone DEFAULT NULL,
+    initializationvector bytea DEFAULT NULL,
+    bucketname character varying(255) DEFAULT NULL,
+    objectname character varying(255) DEFAULT NULL,
+    version numeric DEFAULT NULL
 );
 
 
@@ -241,18 +238,18 @@ ALTER TABLE restoreobjectpart OWNER TO yig;
 --
 
 CREATE TABLE restoreobjects (
-    bucketname character varying(255),
-    objectname character varying(255),
-    version numeric,
-    status boolean DEFAULT false,
+    bucketname character varying(255) DEFAULT NULL,
+    objectname character varying(255) DEFAULT NULL,
+    version numeric DEFAULT NULL,
+    status smallint DEFAULT '0'::smallint,
     lifetime smallint DEFAULT '1'::smallint,
-    lastmodifiedtime timestamp with time zone,
-    location character varying(255),
-    pool character varying(255),
-    ownerid character varying(255),
-    size bigint,
-    objectid character varying(255),
-    etag character varying(255)
+    lastmodifiedtime timestamp with time zone DEFAULT NULL,
+    location character varying(255) DEFAULT NULL,
+    pool character varying(255) DEFAULT NULL,
+    ownerid character varying(255) DEFAULT NULL,
+    size bigint DEFAULT NULL,
+    objectid character varying(255) DEFAULT NULL,
+    etag character varying(255) DEFAULT NULL
 );
 
 
@@ -263,8 +260,8 @@ ALTER TABLE restoreobjects OWNER TO yig;
 --
 
 CREATE TABLE users (
-    userid character varying(255),
-    bucketname character varying(255)
+    userid character varying(255) DEFAULT NULL,
+    bucketname character varying(255) DEFAULT NULL
 );
 
 ALTER TABLE users OWNER TO yig;

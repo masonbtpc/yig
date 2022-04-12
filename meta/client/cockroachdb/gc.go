@@ -193,7 +193,7 @@ func (t *CockroachDBClient) GetGarbageCollection(bucketName, objectName, version
 
 func getGcParts(bucketname, objectname, version string, cli *sql.DB) (parts map[int]*Part, err error) {
 	parts = make(map[int]*Part)
-	sqltext := "select partnumber,size,objectid,offset,etag,lastmodified,initializationvector from gcpart where bucketname=$1 and objectname=$2 and version=$3;"
+	sqltext := "select partnumber,size,objectid,'offset',etag,lastmodified,initializationvector from gcpart where bucketname=$1 and objectname=$2 and version=$3;"
 	rows, err := cli.Query(sqltext, bucketname, objectname, version)
 	if err != nil {
 		return

@@ -72,7 +72,7 @@ func (t *CockroachDBClient) GetMultipart(bucketName, objectName, uploadId string
 		return
 	}
 
-	sqltext = "select partnumber,size,objectid,offset,etag,lastmodified,initializationvector from multipartpart where bucketname=$1 and objectname=$2 and uploadtime=$3;"
+	sqltext = "select partnumber,size,objectid,'offset',etag,lastmodified,initializationvector from multipartpart where bucketname=$1 and objectname=$2 and uploadtime=$3;"
 	rows, err := t.Client.Query(sqltext, bucketName, objectName, uploadTime)
 	if err != nil {
 		return
@@ -125,7 +125,7 @@ func (t *CockroachDBClient) PutObjectPart(multipart *Multipart, part *Part, tx D
 		return
 	}
 	lastModified := lastt.Format(CREATE_TIME_LAYOUT)
-	sqltext := "insert into multipartpart(partnumber,size,objectid,offset,etag,lastmodified,initializationvector,bucketname,objectname,uploadtime) " +
+	sqltext := "insert into multipartpart(partnumber,size,objectid,'offset',etag,lastmodified,initializationvector,bucketname,objectname,uploadtime) " +
 		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)"
 	_, err = tx.Exec(sqltext, part.PartNumber, part.Size, part.ObjectId, part.Offset, part.Etag, lastModified, part.InitializationVector, multipart.BucketName, multipart.ObjectName, uploadtime)
 	return

@@ -8,9 +8,9 @@ RUN apt-get update && \
                                              librdkafka-dev build-essential
 
 # Copy project to container
-ADD . /work
+#ADD . /work
 
 # Build application
-RUN make build_internal
+#RUN make build_internal
 
-CMD /work/yig
+#CMD /work/yig

@@ -25,7 +25,7 @@ SET default_tablespace = '';
 -- Name: buckets; Type: TABLE; Schema: yig; Owner: yig
 --
 
-CREATE TABLE buckets (
+CREATE TABLE yig.buckets (
     bucketname character varying(255) DEFAULT ''::character varying NOT NULL,
     acl json DEFAULT NULL,
     cors json DEFAULT NULL,
@@ -41,26 +41,26 @@ CREATE TABLE buckets (
 );
 
 
-ALTER TABLE buckets OWNER TO yig;
+ALTER TABLE yig.buckets OWNER TO yig;
 
 --
 -- Name: cluster; Type: TABLE; Schema: yig; Owner: yig
 --
 
-CREATE TABLE cluster (
+CREATE TABLE yig.cluster (
     fsid character varying(255) DEFAULT NULL,
     pool character varying(255) DEFAULT NULL,
     weight bigint DEFAULT NULL
 );
 
 
-ALTER TABLE cluster OWNER TO yig;
+ALTER TABLE yig.cluster OWNER TO yig;
 
 --
 -- Name: gc; Type: TABLE; Schema: yig; Owner: yig
 --
 
-CREATE TABLE gc (
+CREATE TABLE yig.gc (
     bucketname character varying(255) DEFAULT NULL,
     objectname character varying(255) DEFAULT NULL,
     version decimal(20) DEFAULT NULL,
@@ -74,13 +74,13 @@ CREATE TABLE gc (
 );
 
 
-ALTER TABLE gc OWNER TO yig;
+ALTER TABLE yig.gc OWNER TO yig;
 
 --
 -- Name: gcpart; Type: TABLE; Schema: yig; Owner: yig
 --
 
-CREATE TABLE gcpart (
+CREATE TABLE yig.gcpart (
     partnumber bigint DEFAULT NULL,
     size bigint DEFAULT NULL,
     objectid character varying(255) DEFAULT NULL,
@@ -94,25 +94,25 @@ CREATE TABLE gcpart (
 );
 
 
-ALTER TABLE gcpart OWNER TO yig;
+ALTER TABLE yig.gcpart OWNER TO yig;
 
 --
 -- Name: lifecycle; Type: TABLE; Schema: yig; Owner: yig
 --
 
-CREATE TABLE lifecycle (
+CREATE TABLE yig.lifecycle (
     bucketname character varying(255) DEFAULT NULL,
     status character varying(255) DEFAULT NULL
 );
 
 
-ALTER TABLE lifecycle OWNER TO yig;
+ALTER TABLE yig.lifecycle OWNER TO yig;
 
 --
 -- Name: multipartpart; Type: TABLE; Schema: yig; Owner: yig
 --
 
-CREATE TABLE multipartpart (
+CREATE TABLE yig.multipartpart (
     partnumber bigint DEFAULT NULL,
     size bigint DEFAULT NULL,
     objectid character varying(255),
@@ -126,13 +126,13 @@ CREATE TABLE multipartpart (
 );
 
 
-ALTER TABLE multipartpart OWNER TO yig;
+ALTER TABLE yig.multipartpart OWNER TO yig;
 
 --
 -- Name: multiparts; Type: TABLE; Schema: yig; Owner: yig
 --
 
-CREATE TABLE multiparts (
+CREATE TABLE yig.multiparts (
     bucketname character varying(255) DEFAULT NULL,
     objectname character varying(255) DEFAULT NULL,
     uploadtime numeric DEFAULT NULL,
@@ -150,13 +150,13 @@ CREATE TABLE multiparts (
 );
 
 
-ALTER TABLE multiparts OWNER TO yig;
+ALTER TABLE yig.multiparts OWNER TO yig;
 
 --
 -- Name: objectpart; Type: TABLE; Schema: yig; Owner: yig
 --
 
-CREATE TABLE objectpart (
+CREATE TABLE yig.objectpart (
     partnumber bigint DEFAULT NULL,
     size bigint DEFAULT NULL,
     objectid character varying(255) DEFAULT NULL,
@@ -170,12 +170,12 @@ CREATE TABLE objectpart (
 );
 
 
-ALTER TABLE objectpart OWNER TO yig;
+ALTER TABLE yig.objectpart OWNER TO yig;
 
 --
 -- Name: objects; Type: TABLE; Schema: yig; Owner: yig
 --
-CREATE TABLE objects (
+CREATE TABLE yig.objects (
     bucketname character varying(255) DEFAULT NULL,
     name character varying(255) DEFAULT NULL,
     version decimal(20) DEFAULT NULL,
@@ -198,26 +198,26 @@ CREATE TABLE objects (
     storageclass smallint DEFAULT '0'::smallint
 );
 
-ALTER TABLE objects OWNER TO yig;
+ALTER TABLE yig.objects OWNER TO yig;
 
 --
 -- Name: objmap; Type: TABLE; Schema: yig; Owner: yig
 --
 
-CREATE TABLE objmap (
+CREATE TABLE yig.objmap (
     bucketname character varying(255) DEFAULT NULL,
     objectname character varying(255) DEFAULT NULL,
     nullvernum bigint DEFAULT NULL
 );
 
 
-ALTER TABLE objmap OWNER TO yig;
+ALTER TABLE yig.objmap OWNER TO yig;
 
 --
 -- Name: restoreobjectpart; Type: TABLE; Schema: yig; Owner: yig
 --
 
-CREATE TABLE restoreobjectpart (
+CREATE TABLE yig.restoreobjectpart (
     partnumber bigint DEFAULT NULL,
     size bigint DEFAULT NULL,
     objectid character varying(255) DEFAULT NULL,
@@ -231,13 +231,13 @@ CREATE TABLE restoreobjectpart (
 );
 
 
-ALTER TABLE restoreobjectpart OWNER TO yig;
+ALTER TABLE yig.restoreobjectpart OWNER TO yig;
 
 --
 -- Name: restoreobjects; Type: TABLE; Schema: yig; Owner: yig
 --
 
-CREATE TABLE restoreobjects (
+CREATE TABLE yig.restoreobjects (
     bucketname character varying(255) DEFAULT NULL,
     objectname character varying(255) DEFAULT NULL,
     version decimal(20) DEFAULT NULL,
@@ -253,82 +253,82 @@ CREATE TABLE restoreobjects (
 );
 
 
-ALTER TABLE restoreobjects OWNER TO yig;
+ALTER TABLE yig.restoreobjects OWNER TO yig;
 
 --
 -- Name: users; Type: TABLE; Schema: yig; Owner: yig
 --
 
-CREATE TABLE users (
+CREATE TABLE yig.users (
     userid character varying(255) DEFAULT NULL,
     bucketname character varying(255) DEFAULT NULL
 );
 
-ALTER TABLE users OWNER TO yig;
+ALTER TABLE yig.users OWNER TO yig;
 
 --
 -- Name: buckets idx_16387_primary; Type: CONSTRAINT; Schema: yig; Owner: yig
 --
 
-ALTER TABLE ONLY buckets
+ALTER TABLE ONLY yig.buckets
     ADD CONSTRAINT idx_16387_primary PRIMARY KEY (bucketname);
 
 --
 -- Name: idx_16394_rowkey; Type: INDEX; Schema: yig; Owner: yig
 --
 
-CREATE UNIQUE INDEX idx_16394_rowkey ON cluster USING btree (fsid, pool);
+CREATE UNIQUE INDEX idx_16394_rowkey ON yig.cluster USING btree (fsid, pool);
 
 --
 -- Name: idx_16399_rowkey; Type: INDEX; Schema: yig; Owner: yig
 --
 
-CREATE UNIQUE INDEX idx_16399_rowkey ON gc USING btree (bucketname, objectname, version);
+CREATE UNIQUE INDEX idx_16399_rowkey ON yig.gc USING btree (bucketname, objectname, version);
 
 --
 -- Name: idx_16404_rowkey; Type: INDEX; Schema: yig; Owner: yig
 --
 
-CREATE INDEX idx_16404_rowkey ON gcpart USING btree (bucketname, objectname, version);
+CREATE INDEX idx_16404_rowkey ON yig.gcpart USING btree (bucketname, objectname, version);
 
 --
 -- Name: idx_16414_rowkey; Type: INDEX; Schema: yig; Owner: yig
 --
 
-CREATE INDEX idx_16414_rowkey ON multipartpart USING btree (bucketname, objectname, uploadtime);
+CREATE INDEX idx_16414_rowkey ON yig.multipartpart USING btree (bucketname, objectname, uploadtime);
 
 --
 -- Name: idx_16419_rowkey; Type: INDEX; Schema: yig; Owner: yig
 --
 
-CREATE UNIQUE INDEX idx_16419_rowkey ON multiparts USING btree (bucketname, objectname, uploadtime);
+CREATE UNIQUE INDEX idx_16419_rowkey ON yig.multiparts USING btree (bucketname, objectname, uploadtime);
 
 --
 -- Name: idx_16425_rowkey; Type: INDEX; Schema: yig; Owner: yig
 --
 
-CREATE INDEX idx_16425_rowkey ON objectpart USING btree (bucketname, objectname, version);
+CREATE INDEX idx_16425_rowkey ON yig.objectpart USING btree (bucketname, objectname, version);
 
 --
 -- Name: idx_16430_rowkey; Type: INDEX; Schema: yig; Owner: yig
 --
 
-CREATE UNIQUE INDEX idx_16430_rowkey ON objects USING btree (bucketname, name, version);
+CREATE UNIQUE INDEX idx_16430_rowkey ON yig.objects USING btree (bucketname, name, version);
 
 --
 -- Name: idx_16437_objmap; Type: INDEX; Schema: yig; Owner: yig
 --
 
-CREATE UNIQUE INDEX idx_16437_objmap ON objmap USING btree (bucketname, objectname);
+CREATE UNIQUE INDEX idx_16437_objmap ON yig.objmap USING btree (bucketname, objectname);
 
 --
 -- Name: idx_16442_rowkey; Type: INDEX; Schema: yig; Owner: yig
 --
 
-CREATE INDEX idx_16442_rowkey ON restoreobjectpart USING btree (bucketname, objectname, version);
+CREATE INDEX idx_16442_rowkey ON yig.restoreobjectpart USING btree (bucketname, objectname, version);
 
 --
 -- Name: idx_16447_rowkey; Type: INDEX; Schema: yig; Owner: yig
 --
 
-CREATE UNIQUE INDEX idx_16447_rowkey ON restoreobjects USING btree (bucketname, objectname, version);
+CREATE UNIQUE INDEX idx_16447_rowkey ON yig.restoreobjects USING btree (bucketname, objectname, version);

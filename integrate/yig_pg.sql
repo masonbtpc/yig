@@ -13,9 +13,6 @@ SET row_security = off;
 -- Name: yig; Type: SCHEMA; Schema: -; Owner: yig
 --
 
-CREATE USER yig;
-CREATE DATABASE yig;
-GRANT ALL ON DATABASE yig TO yig;
 CREATE SCHEMA yig;
 ALTER SCHEMA yig OWNER TO yig;
 

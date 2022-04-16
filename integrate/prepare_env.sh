@@ -17,10 +17,13 @@ function create_tidb(){
 
 function prepare_cockroachdb() {
     docker cp yig_pg.sql cockroachdb:/cockroach/yig_pg.sql
+    docker exec cockroachdb bash -c "echo 'create user yig;' | cockroach sql --insecure" > /dev/null 2>&1
+    docker exec cockroachdb bash -c "echo 'create database yig;'| cockroach sql --insecure" > /dev/null 2>&1
+    docker exec cockroachdb bash -c "echo 'grant all on database yig to yig;'| cockroach sql --insecure" > /dev/null 2>&1 
 }
 
 function create_cockroachdb() {
-    docker exec cockroachdb bash -c "cockroach sql --insecure --database="yig" < /cockroach/yig_pg.sql" > /dev/null 2>&1
+    docker exec cockroachdb bash -c "cockroach sql -u yig -d yig --insecure < /cockroach/yig_pg.sql" > /dev/null 2>&1
 }
 
 function prepare_vault(){

@@ -118,8 +118,6 @@ github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af h1:pmfjZENx5i
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
 github.com/journeymidnight/aws-sdk-go v1.18.1 h1:/dv12U8x+EHVEmW66rXtI00Do+ZMREGitokPGMpUalc=
 github.com/journeymidnight/aws-sdk-go v1.18.1/go.mod h1:on1A11DghtZvaybRzuiHW6fqTXv2RPjFTx6OhMc8sZc=
-github.com/journeymidnight/radoshttpd v0.0.0-20190617133011-609666b51136 h1:ioRwpqJIOz8DOhriRNkd2/DYXYLi44N61N9MnjozzuM=
-github.com/journeymidnight/radoshttpd v0.0.0-20190617133011-609666b51136/go.mod h1:crzxK1DDd3sNyFWzwbx/84lTNk4TO4wsvjl186nH+R4=
 github.com/journeymidnight/radoshttpd v0.0.7 h1:dTmYjCCDtrF/l0iBhPIoo67LqMN9a+jkVS9hhp94w9Y=
 github.com/journeymidnight/radoshttpd v0.0.7/go.mod h1:crzxK1DDd3sNyFWzwbx/84lTNk4TO4wsvjl186nH+R4=
 github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=

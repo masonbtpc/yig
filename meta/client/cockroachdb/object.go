@@ -9,7 +9,6 @@ import (
 	"time"
 
 	. "github.com/journeymidnight/yig/error"
-	"github.com/journeymidnight/yig/helper"
 	. "github.com/journeymidnight/yig/meta/types"
 	"github.com/xxtea/xxtea-go/xxtea"
 )
@@ -170,16 +169,13 @@ func (t *CockroachDBClient) PutObject(object *Object, tx DB) (err error) {
 	}
 	sql, args := object.GetCreateSql()
 	_, err = tx.Exec(sql, args...)
-	helper.Logger.Info("LOG: value of err from object.go:172: ", err)
 	if object.Parts != nil {
 		v := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 		version := strconv.FormatUint(v, 10)
 		for _, p := range object.Parts {
 			psql, args := p.GetCreateSql(object.BucketName, object.Name, version)
-			helper.Logger.Info("LOG: Called psql and args for PutObject:", psql, args)
 			_, err = tx.Exec(psql, args...)
 			if err != nil {
-				helper.Logger.Info("LOG: Hit error in db exec - object.go:181: ", err)
 				return err
 			}
 		}
@@ -226,7 +222,6 @@ func (t *CockroachDBClient) UpdateObject(object *Object, tx DB) (err error) {
 }
 
 func (t *CockroachDBClient) DeleteObject(object *Object, tx DB) (err error) {
-	helper.Logger.Info("LOG: Hit DeleteOject in object.go:229")
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {
@@ -245,17 +240,13 @@ func (t *CockroachDBClient) DeleteObject(object *Object, tx DB) (err error) {
 	v := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 	version := strconv.FormatUint(v, 10)
 	sqltext := "delete from objects where name=$1 and bucketname=$2 and version=$3;"
-	helper.Logger.Info("LOG: calling delete from object with the following: ", sqltext, object.Name, object.BucketName, version)
 	_, err = tx.Exec(sqltext, object.Name, object.BucketName, version)
 	if err != nil {
-		helper.Logger.Info("LOG: Hit error in delete from object: ", err)
 		return err
 	}
 	sqltext = "delete from objectpart where objectname=$1 and bucketname=$2 and version=$3;"
-	helper.Logger.Info("LOG: calling delete from objectpart with the following: ", sqltext, object.Name, object.BucketName, version)
 	_, err = tx.Exec(sqltext, object.Name, object.BucketName, version)
 	if err != nil {
-		helper.Logger.Info("LOG: Hit error in delete from objectpart: ", err)
 		return err
 	}
 	return nil

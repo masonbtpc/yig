@@ -187,9 +187,7 @@ func (t *CockroachDBClient) ListObjects(bucketName, marker, verIdMarker, prefix,
 					order by bucketname,name,version 
 					limit $2`
 				rows, err = t.Client.Query(sqltext, bucketName, maxKeys)
-				helper.Logger.Info("LOG: calling sql from bucket.go:184: ", sqltext, bucketName, maxKeys)
 				if err != nil {
-					helper.Logger.Info("LOG: error occured bucket.go:188: ", err)
 					continue
 				}
 			} else {
@@ -200,9 +198,7 @@ func (t *CockroachDBClient) ListObjects(bucketName, marker, verIdMarker, prefix,
 					order by bucketname,name,version 
 					offset $3 limit $4`
 				rows, err = t.Client.Query(sqltext, bucketName, marker, objectNum[marker], objectNum[marker]+maxKeys)
-				helper.Logger.Info("LOG: calling sql from bucket.go:202: ", sqltext, bucketName, marker, objectNum[marker], objectNum[marker]+maxKeys)
 				if err != nil {
-					helper.Logger.Info("LOG: error occured bucket.go:202: ", err)
 					continue
 				}
 			}
@@ -217,7 +213,6 @@ func (t *CockroachDBClient) ListObjects(bucketName, marker, verIdMarker, prefix,
 					limit $3`
 				rows, err = t.Client.Query(sqltext, bucketName, prefixPattern, maxKeys)
 				if err != nil {
-					helper.Logger.Info("LOG: error occured bucket.go:218: ", err)
 					continue
 				}
 			} else {
@@ -231,7 +226,6 @@ func (t *CockroachDBClient) ListObjects(bucketName, marker, verIdMarker, prefix,
 				rows, err = t.Client.Query(sqltext, bucketName, marker, prefixPattern,
 					objectNum[marker], objectNum[marker]+maxKeys)
 				if err != nil {
-					helper.Logger.Info("LOG: error occured bucket.go:231: ", err)
 					continue
 				}
 			}

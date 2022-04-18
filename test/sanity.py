@@ -383,7 +383,7 @@ def delete_bucket_nonexist(name, client):
 # =====================================================
 
 
-XTESTS = [create_bucket,
+TESTS = [create_bucket,
          head_bucket, head_bucket_nonexist,
          list_buckets,
          put_object,
@@ -399,14 +399,9 @@ XTESTS = [create_bucket,
          delete_multipart_object,
          put_bucket_cors, get_bucket_cors, delete_bucket_cors,
          put_bucket_versioning, get_bucket_versioning,
-         delete_bucket, delete_bucket_nonexist]
+         delete_bucket, delete_bucket_nonexist
+	]
 
-TESTS = [
-	create_bucket,
-	head_bucket,
-	put_object,
-	put_object_copy
-]
 
 if __name__ == '__main__':
     base.run(TESTS)

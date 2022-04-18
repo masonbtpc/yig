@@ -85,14 +85,14 @@ func valuesForParts(parts map[int]*Part) (values map[string][]byte, err error) {
 }
 
 func (p *Part) GetCreateSql(bucketname, objectname, version string) (string, []interface{}) {
-	sql := "insert into objectpart(partnumber,size,objectid,offset,etag,lastmodified,initializationvector,bucketname,objectname,version) " +
+	sql := "insert into objectpart(partnumber,size,objectid,\"offset\",etag,lastmodified,initializationvector,bucketname,objectname,version) " +
 		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)"
 	args := []interface{}{p.PartNumber, p.Size, p.ObjectId, p.Offset, p.Etag, p.LastModified, p.InitializationVector, bucketname, objectname, version}
 	return sql, args
 }
 
 func (p *Part) GetCreateGcSql(bucketname, objectname string, version uint64) (string, []interface{}) {
-	sql := "insert into gcpart(partnumber,size,objectid,offset,etag,lastmodified,initializationvector,bucketname,objectname,version) " +
+	sql := "insert into gcpart(partnumber,size,objectid,\"offset\",etag,lastmodified,initializationvector,bucketname,objectname,version) " +
 		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)"
 	args := []interface{}{p.PartNumber, p.Size, p.ObjectId, p.Offset, p.Etag, p.LastModified, p.InitializationVector, bucketname, objectname, version}
 	return sql, args

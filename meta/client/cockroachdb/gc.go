@@ -33,7 +33,7 @@ func (t *CockroachDBClient) PutObjectToGarbageCollection(object *Object, tx DB) 
 	}
 	mtime := o.MTime.Format(CREATE_TIME_LAYOUT)
 	version := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
-	sqltext := "insert ignore into gc(bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);"
+	sqltext := "insert into gc(bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) on conflict (bucketname, objectname, version) do nothing;"
 	_, err = tx.Exec(sqltext, o.BucketName, o.ObjectName, version, o.Location, o.Pool, o.ObjectId, o.Status, mtime, hasPart, o.TriedTimes)
 	if err != nil {
 		return err
@@ -142,7 +142,7 @@ func (t *CockroachDBClient) PutFreezerToGarbageCollection(object *Freezer, tx DB
 	}
 	mtime := o.MTime.Format(CREATE_TIME_LAYOUT)
 	version := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
-	sqltext := "insert ignore into gc(bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);"
+	sqltext := "insert into gc(bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) on conflict (bucketname, objectname, version) do nothing;"
 	_, err = tx.Exec(sqltext, o.BucketName, o.ObjectName, version, o.Location, o.Pool, o.ObjectId, o.Status, mtime, hasPart, o.TriedTimes)
 	if err != nil {
 		return err
@@ -193,7 +193,7 @@ func (t *CockroachDBClient) GetGarbageCollection(bucketName, objectName, version
 
 func getGcParts(bucketname, objectname, version string, cli *sql.DB) (parts map[int]*Part, err error) {
 	parts = make(map[int]*Part)
-	sqltext := "select partnumber,size,objectid,'offset',etag,lastmodified,initializationvector from gcpart where bucketname=$1 and objectname=$2 and version=$3;"
+	sqltext := "select partnumber,size,objectid,\"offset\",etag,lastmodified,initializationvector from gcpart where bucketname=$1 and objectname=$2 and version=$3;"
 	rows, err := cli.Query(sqltext, bucketname, objectname, version)
 	if err != nil {
 		return

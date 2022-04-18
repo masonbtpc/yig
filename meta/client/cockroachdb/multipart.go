@@ -30,7 +30,7 @@ func (t *CockroachDBClient) GetMultipart(bucketName, objectName, uploadId string
 	}
 	uploadTime = math.MaxUint64 - uploadTime
 	sqltext := "select bucketname,objectname,uploadtime,initiatorid,ownerid,contenttype,location,pool,acl,sserequest," +
-		"encryption,COALESCE(cipher,\"\"),attrs,storageclass from multiparts where bucketname=$1 and objectname=$2 and uploadtime=$3;"
+		"encryption,COALESCE(cipher,''),attrs,storageclass from multiparts where bucketname=$1 and objectname=$2 and uploadtime=$3;"
 	var initialTime uint64
 	var acl, sseRequest, attrs string
 	err = t.Client.QueryRow(sqltext, bucketName, objectName, uploadTime).Scan(
@@ -72,7 +72,7 @@ func (t *CockroachDBClient) GetMultipart(bucketName, objectName, uploadId string
 		return
 	}
 
-	sqltext = "select partnumber,size,objectid,'offset',etag,lastmodified,initializationvector from multipartpart where bucketname=$1 and objectname=$2 and uploadtime=$3;"
+	sqltext = "select partnumber,size,objectid,\"offset\",etag,lastmodified,initializationvector from multipartpart where bucketname=$1 and objectname=$2 and uploadtime=$3;"
 	rows, err := t.Client.Query(sqltext, bucketName, objectName, uploadTime)
 	if err != nil {
 		return
@@ -125,9 +125,13 @@ func (t *CockroachDBClient) PutObjectPart(multipart *Multipart, part *Part, tx D
 		return
 	}
 	lastModified := lastt.Format(CREATE_TIME_LAYOUT)
-	sqltext := "insert into multipartpart(partnumber,size,objectid,'offset',etag,lastmodified,initializationvector,bucketname,objectname,uploadtime) " +
+	sqltext := "insert into multipartpart(partnumber,size,objectid,\"offset\",etag,lastmodified,initializationvector,bucketname,objectname,uploadtime) " +
 		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)"
+	helper.Logger.Info("LOG: Calling sqltext from multipart.go:131 with the following: ", sqltext, part.PartNumber, part.Size, part.ObjectId, part.Offset, part.Etag, lastModified, part.InitializationVector, multipart.BucketName, multipart.ObjectName, uploadtime)
 	_, err = tx.Exec(sqltext, part.PartNumber, part.Size, part.ObjectId, part.Offset, part.Etag, lastModified, part.InitializationVector, multipart.BucketName, multipart.ObjectName, uploadtime)
+	if err != nil {
+		helper.Logger.Info("LOG: Error called during PutObjectPart: ", err)
+	}
 	return
 }
 
@@ -180,11 +184,21 @@ func (t *CockroachDBClient) ListMultipartUploads(bucketName, keyMarker, uploadId
 		var sqltext string
 		var rows *sql.Rows
 		if currentMarker == "" {
-			sqltext = "select objectname,uploadtime,initiatorid,ownerid,storageclass from multiparts where bucketName=$1 order by bucketname,objectname,uploadtime limit $2,$3;"
+			sqltext = "select objectname,uploadtime,initiatorid,ownerid,storageclass from multiparts where bucketName=$1 order by bucketname,objectname,uploadtime offset $2 limit $3;"
+			helper.Logger.Info("LOG: calling sqltext in multipart.go:183", sqltext, bucketName, objnum[currentMarker], objnum[currentMarker]+maxUploads)
 			rows, err = t.Client.Query(sqltext, bucketName, objnum[currentMarker], objnum[currentMarker]+maxUploads)
+			if err != nil {
+				helper.Logger.Info("LOG: Caught error multipart.go:185 ", err)
+				continue
+			}
 		} else {
-			sqltext = "select objectname,uploadtime,initiatorid,ownerid,storageclass from multiparts where bucketName=$1 and objectname>=$2 order by bucketname,objectname,uploadtime limit $3,$4;"
+			sqltext = "select objectname,uploadtime,initiatorid,ownerid,storageclass from multiparts where bucketName=$1 and objectname>=$2 order by bucketname,objectname,uploadtime offset $3 limit $4;"
+			helper.Logger.Info("LOG: calling sqltext in multipart.go:191", sqltext, bucketName, currentMarker, objnum[currentMarker], objnum[currentMarker]+maxUploads)
 			rows, err = t.Client.Query(sqltext, bucketName, currentMarker, objnum[currentMarker], objnum[currentMarker]+maxUploads)
+			if err != nil {
+				helper.Logger.Info("LOG: Caught error multipart.go:192 ", err)
+				continue
+			}
 		}
 		if err != nil {
 			return

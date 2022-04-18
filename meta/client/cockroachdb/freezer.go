@@ -110,7 +110,7 @@ func (t *CockroachDBClient) DeleteFreezer(bucketName, objectName string, tx DB) 
 //util function
 func getFreezerParts(bucketName, objectName string, cli *sql.DB) (parts map[int]*Part, err error) {
 	parts = make(map[int]*Part)
-	sqltext := "select partnumber,size,objectid,'offset',etag,lastmodified,initializationvector from restoreobjectpart where bucketname=$1 and objectname=$2;"
+	sqltext := "select partnumber,size,objectid,\"offset\",etag,lastmodified,initializationvector from restoreobjectpart where bucketname=$1 and objectname=$2;"
 	rows, err := cli.Query(sqltext, bucketName, objectName)
 	if err != nil {
 		return

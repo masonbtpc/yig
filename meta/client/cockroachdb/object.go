@@ -25,7 +25,7 @@ func (t *CockroachDBClient) GetObject(bucketName, objectName, version string) (o
 		sqltext += "order by bucketname,name,version limit 1;"
 		row = t.Client.QueryRow(sqltext, bucketName, objectName)
 	} else {
-		sqltext += "and version=$1;"
+		sqltext += "and version=$3;"
 		row = t.Client.QueryRow(sqltext, bucketName, objectName, version)
 	}
 	object = &Object{}
@@ -170,14 +170,16 @@ func (t *CockroachDBClient) PutObject(object *Object, tx DB) (err error) {
 	}
 	sql, args := object.GetCreateSql()
 	_, err = tx.Exec(sql, args...)
+	helper.Logger.Info("LOG: value of err from object.go:172: ", err)
 	if object.Parts != nil {
 		v := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 		version := strconv.FormatUint(v, 10)
 		for _, p := range object.Parts {
 			psql, args := p.GetCreateSql(object.BucketName, object.Name, version)
-			helper.Logger.Info("Called psql and args for PutObject:", psql, args)
+			helper.Logger.Info("LOG: Called psql and args for PutObject:", psql, args)
 			_, err = tx.Exec(psql, args...)
 			if err != nil {
+				helper.Logger.Info("LOG: Hit error in db exec - object.go:181: ", err)
 				return err
 			}
 		}
@@ -224,6 +226,7 @@ func (t *CockroachDBClient) UpdateObject(object *Object, tx DB) (err error) {
 }
 
 func (t *CockroachDBClient) DeleteObject(object *Object, tx DB) (err error) {
+	helper.Logger.Info("LOG: Hit DeleteOject in object.go:229")
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {
@@ -242,13 +245,17 @@ func (t *CockroachDBClient) DeleteObject(object *Object, tx DB) (err error) {
 	v := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 	version := strconv.FormatUint(v, 10)
 	sqltext := "delete from objects where name=$1 and bucketname=$2 and version=$3;"
+	helper.Logger.Info("LOG: calling delete from object with the following: ", sqltext, object.Name, object.BucketName, version)
 	_, err = tx.Exec(sqltext, object.Name, object.BucketName, version)
 	if err != nil {
+		helper.Logger.Info("LOG: Hit error in delete from object: ", err)
 		return err
 	}
 	sqltext = "delete from objectpart where objectname=$1 and bucketname=$2 and version=$3;"
+	helper.Logger.Info("LOG: calling delete from objectpart with the following: ", sqltext, object.Name, object.BucketName, version)
 	_, err = tx.Exec(sqltext, object.Name, object.BucketName, version)
 	if err != nil {
+		helper.Logger.Info("LOG: Hit error in delete from objectpart: ", err)
 		return err
 	}
 	return nil
@@ -257,7 +264,7 @@ func (t *CockroachDBClient) DeleteObject(object *Object, tx DB) (err error) {
 //util function
 func getParts(bucketName, objectName string, version uint64, cli *sql.DB) (parts map[int]*Part, err error) {
 	parts = make(map[int]*Part)
-	sqltext := "select partnumber,size,objectid,'offset',etag,lastmodified,initializationvector from objectpart where bucketname=$1 and objectname=$2 and version=$3;"
+	sqltext := "select partnumber,size,objectid,\"offset\",etag,lastmodified,initializationvector from objectpart where bucketname=$1 and objectname=$2 and version=$3;"
 	rows, err := cli.Query(sqltext, bucketName, objectName, version)
 	if err != nil {
 		return

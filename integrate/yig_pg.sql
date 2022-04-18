@@ -66,7 +66,7 @@ CREATE TABLE yig.gc (
     objectid character varying(255) DEFAULT NULL,
     status character varying(255) DEFAULT NULL,
     mtime timestamp with time zone DEFAULT NULL,
-    part smallint DEFAULT NULL,
+    part boolean DEFAULT NULL,
     triedtimes bigint DEFAULT NULL
 );
 

@@ -20,7 +20,12 @@ case $DATABASE in
         ;;
 esac
 
-sed -i "s|db_info|db_info = \"$db_info\"|" $PWD/yigconf/yig.toml
-sed -i "s|meta_store|meta_store = \"$meta_store\"|" $PWD/yigconf/yig.toml
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    sed -i "s|db_info|db_info = \"$db_info\"|" $PWD/yigconf/yig.toml
+    sed -i "s|meta_store|meta_store = \"$meta_store\"|" $PWD/yigconf/yig.toml
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i -e "s|db_info|db_info = \"$db_info\"|" $PWD/yigconf/yig.toml
+    sed -i -e "s|meta_store|meta_store = \"$meta_store\"|" $PWD/yigconf/yig.toml
+fi
 
 sudo docker run --rm -v ${BASEDIR}:${BUILDDIR} -w ${BUILDDIR} journeymidnight/yig bash -c 'make build_internal'

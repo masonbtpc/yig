@@ -39,7 +39,7 @@ runlc:
 	cd integrate && sudo bash runlc.sh $(WORKDIR)
 
 env:
-	cd integrate && docker-compose stop && docker-compose rm --force && sudo rm -rf cephconf && docker-compose up -d && sleep 10 && bash prepare_env.sh $(DATABASE)
+	cd integrate && docker-compose stop && docker-compose rm --force && sudo rm -rf cephconf && docker-compose up -d $(DATABASE) && sleep 10 && bash prepare_env.sh $(DATABASE)
 	
 plugin:
 	cd plugins && bash build_plugins.sh $(BUILDDIR)

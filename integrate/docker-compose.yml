@@ -3,8 +3,50 @@
 #  So I use static IP address for this docker-compose file
 
 version: '2'
-
 services:
+  cockroachdb:
+    profiles: ["cockroachdb"]
+    image: cockroachdb/cockroach:v21.2.7
+    container_name: cockroachdb
+    networks:
+      vpcbr:
+        ipv4_address: "10.5.0.9"
+    ports:
+      - "26257:26257"
+      - "5432:5432"
+    volumes:
+      - ./data/cockroachdb:/cockroach/cockroach-data
+    command: start-single-node --insecure
+    depends_on:
+      - ceph
+      - redis
+      - vault
+      - zookeeper
+      - kafka
+
+  tidb:
+    profiles: ["tidb"]
+    image: pingcap/tidb:v2.1.1
+    container_name: tidb
+    networks:
+      vpcbr:
+        ipv4_address: "10.5.0.17"
+    ports:
+      - "4000:4000"
+      - "10080:10080"
+    volumes:
+      - ./tidbconf/tidb.toml:/tidb.toml:ro
+    command:
+      - --store=mocktikv
+      - --config=/tidb.toml
+      - -L=debug
+    depends_on:
+      - ceph
+      - redis
+      - vault
+      - zookeeper
+      - kafka
+
   ceph:
     image: journeymidnight/ceph
     container_name: ceph
@@ -27,35 +69,6 @@ services:
       vpcbr:
         ipv4_address: "10.5.0.8"
 
-  cockroachdb:
-        image: cockroachdb/cockroach:v21.2.7
-        container_name: cockroachdb
-        networks:
-          vpcbr:
-            ipv4_address: "10.5.0.9"
-        ports:
-          - "26257:26257"
-          - "5432:5432"
-        volumes:
-          - ./data/cockroachdb:/cockroach/cockroach-data
-        command: start-single-node --insecure
-
-  tidb:
-    image: pingcap/tidb:v2.1.1
-    container_name: tidb
-    networks:
-      vpcbr:
-        ipv4_address: "10.5.0.17"
-    ports:
-      - "4000:4000"
-      - "10080:10080"
-    volumes:
-      - ./tidbconf/tidb.toml:/tidb.toml:ro
-    command:
-      - --store=mocktikv
-      - --config=/tidb.toml
-      - -L=debug
-  
   vault:
     image: vault
     container_name: vault
@@ -116,7 +129,6 @@ services:
     networks:
       vpcbr:
         ipv4_address: "10.5.0.21"
-
 
 networks:
   vpcbr:

@@ -30,7 +30,7 @@ function prepare_database(){
             ;;
         * )
             echo "Unknown database type specified. Please edit the Makefile. Exiting"
-            exit(1)
+            exit
             ;;
     esac
 }
@@ -41,9 +41,13 @@ function prepare_vault(){
     docker exec vault vault write -f transit/keys/yig
 }
 
-echo "creating Ceph pool..."
-prepare_ceph
-echo "creating Database..."
-prepare_database
-echo "creating Vault..."
-prepare_vault
+function main(){
+    echo "creating Ceph pool..."
+    prepare_ceph
+    echo "creating Database..."
+    prepare_database
+    echo "creating Vault..."
+    prepare_vault
+}
+
+main

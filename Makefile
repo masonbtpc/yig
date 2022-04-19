@@ -4,7 +4,7 @@ REPO = yig
 WORKDIR = /work
 BUILDROOT = build
 BUILDDIR = $(WORKDIR)/$(BUILDROOT)/$(REPO)
-DATABASE = cockroachdb
+DATABASE = cockroachdb # either tidb of cockroachdb. defaults to cockroachdb
 export GO111MODULE=on
 export GOPROXY=https://goproxy.io,direct
 

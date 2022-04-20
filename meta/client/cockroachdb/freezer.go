@@ -4,21 +4,21 @@ import (
 	"database/sql"
 	"time"
 
-	. "github.com/journeymidnight/yig/error"
-	. "github.com/journeymidnight/yig/meta/types"
+	e "github.com/journeymidnight/yig/error"
+	"github.com/journeymidnight/yig/meta/types"
 )
 
-func (t *CockroachDBClient) CreateFreezer(freezer *Freezer) (err error) {
+func (t *CockroachDBClient) CreateFreezer(freezer *types.Freezer) (err error) {
 	sql, args := freezer.GetCreateSql()
 	_, err = t.Client.Exec(sql, args...)
 	return
 }
 
-func (t *CockroachDBClient) GetFreezer(bucketName, objectName, version string) (freezer *Freezer, err error) {
+func (t *CockroachDBClient) GetFreezer(bucketName, objectName, version string) (freezer *types.Freezer, err error) {
 	var lastmodifiedtime string
 	sqltext := "select bucketname,objectname,IFNULL(version,''),status,lifetime,lastmodifiedtime,IFNULL(location,''),IFNULL(pool,''),IFNULL(ownerid,''),IFNULL(size,'0'),IFNULL(objectid,''),IFNULL(etag,'') from restoreobjects where bucketname=$1 and objectname=$2;"
 	row := t.Client.QueryRow(sqltext, bucketName, objectName)
-	freezer = &Freezer{}
+	freezer = &types.Freezer{}
 	err = row.Scan(
 		&freezer.BucketName,
 		&freezer.Name,
@@ -34,13 +34,13 @@ func (t *CockroachDBClient) GetFreezer(bucketName, objectName, version string) (
 		&freezer.Etag,
 	)
 	if err == sql.ErrNoRows {
-		err = ErrNoSuchKey
+		err = e.ErrNoSuchKey
 		return
 	} else if err != nil {
 		return
 	}
 	local, _ := time.LoadLocation("Local")
-	freezer.LastModifiedTime, _ = time.ParseInLocation(CREATE_TIME_LAYOUT, lastmodifiedtime, local)
+	freezer.LastModifiedTime, _ = time.ParseInLocation(types.CREATE_TIME_LAYOUT, lastmodifiedtime, local)
 	freezer.Parts, err = getFreezerParts(freezer.BucketName, freezer.Name, t.Client)
 	//build simple index for multipart
 	if len(freezer.Parts) != 0 {
@@ -48,15 +48,15 @@ func (t *CockroachDBClient) GetFreezer(bucketName, objectName, version string) (
 		for k, v := range freezer.Parts {
 			sortedPartNum[k-1] = v.Offset
 		}
-		freezer.PartsIndex = &SimpleIndex{Index: sortedPartNum}
+		freezer.PartsIndex = &types.SimpleIndex{Index: sortedPartNum}
 	}
 	return
 }
 
-func (t *CockroachDBClient) GetFreezerStatus(bucketName, objectName, version string) (freezer *Freezer, err error) {
+func (t *CockroachDBClient) GetFreezerStatus(bucketName, objectName, version string) (freezer *types.Freezer, err error) {
 	sqltext := "select bucketname,objectname,IFNULL(version,''),status from restoreobjects where bucketname=$1 and objectname=$2;"
 	row := t.Client.QueryRow(sqltext, bucketName, objectName)
-	freezer = &Freezer{}
+	freezer = &types.Freezer{}
 	err = row.Scan(
 		&freezer.BucketName,
 		&freezer.Name,
@@ -64,7 +64,7 @@ func (t *CockroachDBClient) GetFreezerStatus(bucketName, objectName, version str
 		&freezer.Status,
 	)
 	if err == sql.ErrNoRows || freezer.Name != objectName {
-		err = ErrNoSuchKey
+		err = e.ErrNoSuchKey
 		return
 	}
 	return
@@ -79,7 +79,7 @@ func (t *CockroachDBClient) UploadFreezerDate(bucketName, objectName string, lif
 	return nil
 }
 
-func (t *CockroachDBClient) DeleteFreezer(bucketName, objectName string, tx DB) (err error) {
+func (t *CockroachDBClient) DeleteFreezer(bucketName, objectName string, tx types.DB) (err error) {
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {
@@ -108,8 +108,8 @@ func (t *CockroachDBClient) DeleteFreezer(bucketName, objectName string, tx DB) 
 }
 
 //util function
-func getFreezerParts(bucketName, objectName string, cli *sql.DB) (parts map[int]*Part, err error) {
-	parts = make(map[int]*Part)
+func getFreezerParts(bucketName, objectName string, cli *sql.DB) (parts map[int]*types.Part, err error) {
+	parts = make(map[int]*types.Part)
 	sqltext := "select partnumber,size,objectid,\"offset\",etag,lastmodified,initializationvector from restoreobjectpart where bucketname=$1 and objectname=$2;"
 	rows, err := cli.Query(sqltext, bucketName, objectName)
 	if err != nil {
@@ -117,7 +117,7 @@ func getFreezerParts(bucketName, objectName string, cli *sql.DB) (parts map[int]
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var p *Part = &Part{}
+		var p *types.Part = &types.Part{}
 		err = rows.Scan(
 			&p.PartNumber,
 			&p.Size,

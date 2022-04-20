@@ -3,12 +3,12 @@ package cockroachdb
 import (
 	"strconv"
 
-	. "github.com/journeymidnight/yig/meta/types"
+	"github.com/journeymidnight/yig/meta/types"
 )
 
 //objmap
-func (t *CockroachDBClient) GetObjectMap(bucketName, objectName string) (objMap *ObjMap, err error) {
-	objMap = &ObjMap{}
+func (t *CockroachDBClient) GetObjectMap(bucketName, objectName string) (objMap *types.ObjMap, err error) {
+	objMap = &types.ObjMap{}
 	sqltext := "select bucketname,objectname,nullvernum from objmap where bucketname=$1 and objectName=$2;"
 	err = t.Client.QueryRow(sqltext, bucketName, objectName).Scan(
 		&objMap.BucketName,
@@ -22,7 +22,7 @@ func (t *CockroachDBClient) GetObjectMap(bucketName, objectName string) (objMap 
 	return
 }
 
-func (t *CockroachDBClient) PutObjectMap(objMap *ObjMap, tx DB) (err error) {
+func (t *CockroachDBClient) PutObjectMap(objMap *types.ObjMap, tx types.DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}
@@ -31,7 +31,7 @@ func (t *CockroachDBClient) PutObjectMap(objMap *ObjMap, tx DB) (err error) {
 	return err
 }
 
-func (t *CockroachDBClient) DeleteObjectMap(objMap *ObjMap, tx DB) (err error) {
+func (t *CockroachDBClient) DeleteObjectMap(objMap *types.ObjMap, tx types.DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}

@@ -10,16 +10,16 @@ import (
 	"time"
 
 	"github.com/journeymidnight/yig/api/datatype"
-	. "github.com/journeymidnight/yig/error"
+	e "github.com/journeymidnight/yig/error"
 	"github.com/journeymidnight/yig/helper"
 	"github.com/journeymidnight/yig/iam"
 	"github.com/journeymidnight/yig/iam/common"
-	. "github.com/journeymidnight/yig/meta/types"
+	"github.com/journeymidnight/yig/meta/types"
 	"github.com/journeymidnight/yig/meta/util"
 )
 
-func (t *CockroachDBClient) GetMultipart(bucketName, objectName, uploadId string) (multipart Multipart, err error) {
-	multipart.Parts = make(map[int]*Part)
+func (t *CockroachDBClient) GetMultipart(bucketName, objectName, uploadId string) (multipart types.Multipart, err error) {
+	multipart.Parts = make(map[int]*types.Part)
 	timestampString, err := util.Decrypt(uploadId)
 	if err != nil {
 		return
@@ -50,7 +50,7 @@ func (t *CockroachDBClient) GetMultipart(bucketName, objectName, uploadId string
 		&multipart.Metadata.StorageClass,
 	)
 	if err != nil && err == sql.ErrNoRows {
-		err = ErrNoSuchUpload
+		err = e.ErrNoSuchUpload
 		return
 	} else if err != nil {
 		return
@@ -79,7 +79,7 @@ func (t *CockroachDBClient) GetMultipart(bucketName, objectName, uploadId string
 	}
 	defer rows.Close()
 	for rows.Next() {
-		p := &Part{}
+		p := &types.Part{}
 		err = rows.Scan(
 			&p.PartNumber,
 			&p.Size,
@@ -89,11 +89,11 @@ func (t *CockroachDBClient) GetMultipart(bucketName, objectName, uploadId string
 			&p.LastModified,
 			&p.InitializationVector,
 		)
-		ts, e := time.Parse(CREATE_TIME_LAYOUT, p.LastModified)
+		ts, e := time.Parse(types.CREATE_TIME_LAYOUT, p.LastModified)
 		if e != nil {
 			return
 		}
-		p.LastModified = ts.Format(CREATE_TIME_LAYOUT)
+		p.LastModified = ts.Format(types.CREATE_TIME_LAYOUT)
 		multipart.Parts[p.PartNumber] = p
 		if err != nil {
 			return
@@ -102,7 +102,7 @@ func (t *CockroachDBClient) GetMultipart(bucketName, objectName, uploadId string
 	return
 }
 
-func (t *CockroachDBClient) CreateMultipart(multipart Multipart) (err error) {
+func (t *CockroachDBClient) CreateMultipart(multipart types.Multipart) (err error) {
 	m := multipart.Metadata
 	uploadtime := math.MaxUint64 - uint64(multipart.InitialTime.UnixNano())
 	acl, _ := json.Marshal(m.Acl)
@@ -114,24 +114,24 @@ func (t *CockroachDBClient) CreateMultipart(multipart Multipart) (err error) {
 	return
 }
 
-func (t *CockroachDBClient) PutObjectPart(multipart *Multipart, part *Part, tx DB) (err error) {
+func (t *CockroachDBClient) PutObjectPart(multipart *types.Multipart, part *types.Part, tx types.DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}
 
 	uploadtime := math.MaxUint64 - uint64(multipart.InitialTime.UnixNano())
-	lastt, err := time.Parse(CREATE_TIME_LAYOUT, part.LastModified)
+	lastt, err := time.Parse(types.CREATE_TIME_LAYOUT, part.LastModified)
 	if err != nil {
 		return
 	}
-	lastModified := lastt.Format(CREATE_TIME_LAYOUT)
+	lastModified := lastt.Format(types.CREATE_TIME_LAYOUT)
 	sqltext := "insert into multipartpart(partnumber,size,objectid,\"offset\",etag,lastmodified,initializationvector,bucketname,objectname,uploadtime) " +
 		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)"
 	_, err = tx.Exec(sqltext, part.PartNumber, part.Size, part.ObjectId, part.Offset, part.Etag, lastModified, part.InitializationVector, multipart.BucketName, multipart.ObjectName, uploadtime)
 	return
 }
 
-func (t *CockroachDBClient) DeleteMultipart(multipart *Multipart, tx DB) (err error) {
+func (t *CockroachDBClient) DeleteMultipart(multipart *types.Multipart, tx types.DB) (err error) {
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {
@@ -194,7 +194,7 @@ func (t *CockroachDBClient) ListMultipartUploads(bucketName, keyMarker, uploadId
 			loopnum += 1
 			var name, initiatorid, ownerid string
 			var uploadtime uint64
-			var storageClass StorageClass
+			var storageClass types.StorageClass
 			err = rows.Scan(
 				&name,
 				&uploadtime,
@@ -240,11 +240,11 @@ func (t *CockroachDBClient) ListMultipartUploads(bucketName, keyMarker, uploadId
 				isTruncated = true
 				exit = true
 				nextKeyMarker = name
-				nextUploadIdMarker = GetMultipartUploadIdForTidb(uploadtime)
+				nextUploadIdMarker = types.GetMultipartUploadIdForTidb(uploadtime)
 				exit = true
 				break
 			}
-			upload.UploadId = GetMultipartUploadIdForTidb(uploadtime)
+			upload.UploadId = types.GetMultipartUploadIdForTidb(uploadtime)
 			upload.Key = name
 			if encodingType != "" {
 				upload.Key = url.QueryEscape(upload.Key)
@@ -265,7 +265,7 @@ func (t *CockroachDBClient) ListMultipartUploads(bucketName, keyMarker, uploadId
 			timestamp := int64(math.MaxUint64 - uploadtime)
 			s := timestamp / 1e9
 			ns := timestamp % 1e9
-			upload.Initiated = time.Unix(s, ns).UTC().Format(CREATE_TIME_LAYOUT)
+			upload.Initiated = time.Unix(s, ns).UTC().Format(types.CREATE_TIME_LAYOUT)
 			uploads = append(uploads, upload)
 			count += 1
 		}
@@ -281,7 +281,7 @@ func (t *CockroachDBClient) ListMultipartUploads(bucketName, keyMarker, uploadId
 	return
 }
 
-func (t *CockroachDBClient) RenameObjectPart(object *Object, sourceObject string, tx DB) (err error) {
+func (t *CockroachDBClient) RenameObjectPart(object *types.Object, sourceObject string, tx types.DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}

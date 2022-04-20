@@ -8,7 +8,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/journeymidnight/yig/api/datatype"
-	. "github.com/journeymidnight/yig/error"
+	e "github.com/journeymidnight/yig/error"
 	"github.com/journeymidnight/yig/meta/client/cockroachdb"
 	"github.com/stretchr/testify/assert"
 )
@@ -73,7 +73,7 @@ func TestCockroachDBClient_GetBucket(t *testing.T) {
 	assert.Equal(t, datatype.Acl{}, bucket.ACL)
 	// Query 2
 	_, err = client.GetBucket("haha")
-	assert.Equal(t, ErrNoSuchBucket, err)
+	assert.Equal(t, e.ErrNoSuchBucket, err)
 	// Query 3
 	_, err = client.GetBucket("hoho")
 	assert.Equal(t, someOtherError, err)

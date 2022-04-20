@@ -8,15 +8,15 @@ import (
 	"time"
 
 	_ "github.com/jackc/pgx/v4"
-	. "github.com/journeymidnight/yig/error"
+	e "github.com/journeymidnight/yig/error"
 	"github.com/journeymidnight/yig/helper"
-	. "github.com/journeymidnight/yig/meta/types"
+	"github.com/journeymidnight/yig/meta/types"
 )
 
-func (t *CockroachDBClient) GetBucket(bucketName string) (bucket *Bucket, err error) {
+func (t *CockroachDBClient) GetBucket(bucketName string) (bucket *types.Bucket, err error) {
 	var acl, cors, logging, lc, policy, website, encryption, createTime string
 	sqltext := "select bucketname,acl,cors,COALESCE(logging,null),lc,uid,policy,website,COALESCE(encryption,null),createtime,usages,versioning from buckets where bucketname=$1;"
-	bucket = new(Bucket)
+	bucket = new(types.Bucket)
 	err = t.Client.QueryRow(sqltext, bucketName).Scan(
 		&bucket.Name,
 		&acl,
@@ -32,12 +32,12 @@ func (t *CockroachDBClient) GetBucket(bucketName string) (bucket *Bucket, err er
 		&bucket.Versioning,
 	)
 	if err != nil && err == sql.ErrNoRows {
-		err = ErrNoSuchBucket
+		err = e.ErrNoSuchBucket
 		return
 	} else if err != nil {
 		return
 	}
-	bucket.CreateTime, err = time.Parse(CREATE_TIME_LAYOUT, createTime)
+	bucket.CreateTime, err = time.Parse(types.CREATE_TIME_LAYOUT, createTime)
 	if err != nil {
 		return
 	}
@@ -72,7 +72,7 @@ func (t *CockroachDBClient) GetBucket(bucketName string) (bucket *Bucket, err er
 	return
 }
 
-func (t *CockroachDBClient) GetBuckets() (buckets []Bucket, err error) {
+func (t *CockroachDBClient) GetBuckets() (buckets []types.Bucket, err error) {
 	sqltext := "select bucketname,acl,cors,COALESCE(logging,null),lc,uid,policy,website,COALESCE(encryption,null),createtime,usages,versioning from buckets;"
 	rows, err := t.Client.Query(sqltext)
 	if err == sql.ErrNoRows {
@@ -84,7 +84,7 @@ func (t *CockroachDBClient) GetBuckets() (buckets []Bucket, err error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var tmp Bucket
+		var tmp types.Bucket
 		var acl, cors, logging, lc, policy, website, encryption, createTime string
 		err = rows.Scan(
 			&tmp.Name,
@@ -102,7 +102,7 @@ func (t *CockroachDBClient) GetBuckets() (buckets []Bucket, err error) {
 		if err != nil {
 			return
 		}
-		tmp.CreateTime, err = time.Parse(CREATE_TIME_LAYOUT, createTime)
+		tmp.CreateTime, err = time.Parse(types.CREATE_TIME_LAYOUT, createTime)
 		if err != nil {
 			return
 		}
@@ -140,7 +140,7 @@ func (t *CockroachDBClient) GetBuckets() (buckets []Bucket, err error) {
 }
 
 //Actually this method is used to update bucket
-func (t *CockroachDBClient) PutBucket(bucket Bucket) error {
+func (t *CockroachDBClient) PutBucket(bucket types.Bucket) error {
 	sql, args := bucket.GetUpdateSql()
 	_, err := t.Client.Exec(sql, args...)
 	if err != nil {
@@ -149,13 +149,13 @@ func (t *CockroachDBClient) PutBucket(bucket Bucket) error {
 	return nil
 }
 
-func (t *CockroachDBClient) CheckAndPutBucket(bucket Bucket) (bool, error) {
+func (t *CockroachDBClient) CheckAndPutBucket(bucket types.Bucket) (bool, error) {
 	var processed bool
 	_, err := t.GetBucket(bucket.Name)
 	if err == nil {
 		processed = false
 		return processed, err
-	} else if err != nil && err != ErrNoSuchBucket {
+	} else if err != nil && err != e.ErrNoSuchBucket {
 		processed = false
 		return processed, err
 	} else {
@@ -166,7 +166,7 @@ func (t *CockroachDBClient) CheckAndPutBucket(bucket Bucket) (bool, error) {
 	return processed, err
 }
 
-func (t *CockroachDBClient) ListObjects(bucketName, marker, verIdMarker, prefix, delimiter string, versioned bool, maxKeys int) (retObjects []*Object, prefixes []string, truncated bool, nextMarker, nextVerIdMarker string, err error) {
+func (t *CockroachDBClient) ListObjects(bucketName, marker, verIdMarker, prefix, delimiter string, versioned bool, maxKeys int) (retObjects []*types.Object, prefixes []string, truncated bool, nextMarker, nextVerIdMarker string, err error) {
 	if versioned {
 		return
 	}
@@ -296,10 +296,10 @@ func (t *CockroachDBClient) ListObjects(bucketName, marker, verIdMarker, prefix,
 					continue
 				}
 			}
-			var o *Object
+			var o *types.Object
 			Strver := strconv.FormatUint(version, 10)
 			o, err = t.GetObject(bucketname, name, Strver)
-			if err == ErrNoSuchKey {
+			if err == e.ErrNoSuchKey {
 				// it's possible the object is already deleted
 				continue
 			}
@@ -333,7 +333,7 @@ func (t *CockroachDBClient) ListObjects(bucketName, marker, verIdMarker, prefix,
 	return
 }
 
-func (t *CockroachDBClient) DeleteBucket(bucket Bucket) error {
+func (t *CockroachDBClient) DeleteBucket(bucket types.Bucket) error {
 	sqltext := "delete from buckets where bucketname=$1;"
 	_, err := t.Client.Exec(sqltext, bucket.Name)
 	if err != nil {
@@ -342,7 +342,7 @@ func (t *CockroachDBClient) DeleteBucket(bucket Bucket) error {
 	return nil
 }
 
-func (t *CockroachDBClient) UpdateUsage(bucketName string, size int64, tx DB) (err error) {
+func (t *CockroachDBClient) UpdateUsage(bucketName string, size int64, tx types.DB) (err error) {
 	if !helper.CONFIG.PiggybackUpdateUsage {
 		return nil
 	}

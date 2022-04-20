@@ -1,22 +1,22 @@
 package meta
 
 import (
-	. "github.com/journeymidnight/yig/error"
+	e "github.com/journeymidnight/yig/error"
 	"github.com/journeymidnight/yig/helper"
-	. "github.com/journeymidnight/yig/meta/types"
+	types "github.com/journeymidnight/yig/meta/types"
 	"github.com/journeymidnight/yig/redis"
 )
 
 // Note the usage info got from this method is possibly not accurate because we don't
 // invalid cache when updating usage. For accurate usage info, use `GetUsage()`
-func (m *Meta) GetBucket(bucketName string, willNeed bool) (bucket *Bucket, err error) {
+func (m *Meta) GetBucket(bucketName string, willNeed bool) (bucket *types.Bucket, err error) {
 	getBucket := func() (b interface{}, err error) {
 		b, err = m.Client.GetBucket(bucketName)
 		helper.Logger.Info("GetBucket CacheMiss. bucket:", bucketName)
 		return b, err
 	}
 	unmarshaller := func(in []byte) (interface{}, error) {
-		var bucket Bucket
+		var bucket types.Bucket
 		err := helper.MsgPackUnMarshal(in, &bucket)
 		return &bucket, err
 	}
@@ -24,16 +24,16 @@ func (m *Meta) GetBucket(bucketName string, willNeed bool) (bucket *Bucket, err 
 	if err != nil {
 		return
 	}
-	bucket, ok := b.(*Bucket)
+	bucket, ok := b.(*types.Bucket)
 	if !ok {
 		helper.Logger.Info("Cast b failed:", b)
-		err = ErrInternalError
+		err = e.ErrInternalError
 		return
 	}
 	return bucket, nil
 }
 
-func (m *Meta) GetBuckets() (buckets []Bucket, err error) {
+func (m *Meta) GetBuckets() (buckets []types.Bucket, err error) {
 	buckets, err = m.Client.GetBuckets()
 	return
 }
@@ -51,7 +51,7 @@ func (m *Meta) GetUsage(bucketName string) (int64, error) {
 	return bucket.Usage, nil
 }
 
-func (m *Meta) GetBucketInfo(bucketName string) (*Bucket, error) {
+func (m *Meta) GetBucketInfo(bucketName string) (*types.Bucket, error) {
 	m.Cache.Remove(redis.BucketTable, bucketName)
 	bucket, err := m.GetBucket(bucketName, true)
 	if err != nil {

@@ -3,7 +3,7 @@ package meta
 import (
 	e "github.com/journeymidnight/yig/error"
 	"github.com/journeymidnight/yig/helper"
-	types "github.com/journeymidnight/yig/meta/types"
+	"github.com/journeymidnight/yig/meta/types"
 	"github.com/journeymidnight/yig/redis"
 )
 

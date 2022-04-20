@@ -2,13 +2,14 @@ package meta
 
 import (
 	"database/sql"
-	. "github.com/journeymidnight/yig/error"
+
+	e "github.com/journeymidnight/yig/error"
 	"github.com/journeymidnight/yig/helper"
-	. "github.com/journeymidnight/yig/meta/types"
+	"github.com/journeymidnight/yig/meta/types"
 	"github.com/journeymidnight/yig/redis"
 )
 
-func (m *Meta) GetObject(bucketName string, objectName string, willNeed bool) (object *Object, err error) {
+func (m *Meta) GetObject(bucketName string, objectName string, willNeed bool) (object *types.Object, err error) {
 	getObject := func() (o interface{}, err error) {
 		helper.Logger.Info("GetObject CacheMiss. bucket:", bucketName,
 			"object:", objectName)
@@ -18,13 +19,13 @@ func (m *Meta) GetObject(bucketName string, objectName string, willNeed bool) (o
 		}
 		helper.Logger.Info("GetObject object.Name:", object.Name)
 		if object.Name != objectName {
-			err = ErrNoSuchKey
+			err = e.ErrNoSuchKey
 			return
 		}
 		return object, nil
 	}
 	unmarshaller := func(in []byte) (interface{}, error) {
-		var object Object
+		var object types.Object
 		err := helper.MsgPackUnMarshal(in, &object)
 		return &object, err
 	}
@@ -34,37 +35,37 @@ func (m *Meta) GetObject(bucketName string, objectName string, willNeed bool) (o
 	if err != nil {
 		return
 	}
-	object, ok := o.(*Object)
+	object, ok := o.(*types.Object)
 	if !ok {
-		err = ErrInternalError
+		err = e.ErrInternalError
 		return
 	}
 	return object, nil
 }
 
-func (m *Meta) GetAllObject(bucketName string, objectName string) (object []*Object, err error) {
+func (m *Meta) GetAllObject(bucketName string, objectName string) (object []*types.Object, err error) {
 	return m.Client.GetAllObject(bucketName, objectName, "")
 }
 
-func (m *Meta) GetObjectMap(bucketName, objectName string) (objMap *ObjMap, err error) {
+func (m *Meta) GetObjectMap(bucketName, objectName string) (objMap *types.ObjMap, err error) {
 	m.Client.GetObjectMap(bucketName, objectName)
 	return
 }
 
-func (m *Meta) GetObjectVersion(bucketName, objectName, version string, willNeed bool) (object *Object, err error) {
+func (m *Meta) GetObjectVersion(bucketName, objectName, version string, willNeed bool) (object *types.Object, err error) {
 	getObjectVersion := func() (o interface{}, err error) {
 		object, err := m.Client.GetObject(bucketName, objectName, version)
 		if err != nil {
 			return
 		}
 		if object.Name != objectName {
-			err = ErrNoSuchKey
+			err = e.ErrNoSuchKey
 			return
 		}
 		return object, nil
 	}
 	unmarshaller := func(in []byte) (interface{}, error) {
-		var object Object
+		var object types.Object
 		err := helper.MsgPackUnMarshal(in, &object)
 		return &object, err
 	}
@@ -73,15 +74,15 @@ func (m *Meta) GetObjectVersion(bucketName, objectName, version string, willNeed
 	if err != nil {
 		return
 	}
-	object, ok := o.(*Object)
+	object, ok := o.(*types.Object)
 	if !ok {
-		err = ErrInternalError
+		err = e.ErrInternalError
 		return
 	}
 	return object, nil
 }
 
-func (m *Meta) PutObject(object *Object, multipart *Multipart, objMap *ObjMap, updateUsage bool) error {
+func (m *Meta) PutObject(object *types.Object, multipart *types.Multipart, objMap *types.ObjMap, updateUsage bool) error {
 	tx, err := m.Client.NewTrans()
 	if err != nil {
 		return err
@@ -120,37 +121,37 @@ func (m *Meta) PutObject(object *Object, multipart *Multipart, objMap *ObjMap, u
 	return m.Client.CommitTrans(tx)
 }
 
-func (m *Meta) PutObjectEntry(object *Object) error {
+func (m *Meta) PutObjectEntry(object *types.Object) error {
 	err := m.Client.PutObject(object, nil)
 	return err
 }
 
-func (m *Meta) UpdateObjectAcl(object *Object) error {
+func (m *Meta) UpdateObjectAcl(object *types.Object) error {
 	err := m.Client.UpdateObjectAcl(object)
 	return err
 }
 
-func (m *Meta) UpdateObjectAttrs(object *Object) error {
+func (m *Meta) UpdateObjectAttrs(object *types.Object) error {
 	err := m.Client.UpdateObjectAttrs(object)
 	return err
 }
 
-func (m *Meta) RenameObject(object *Object, sourceObject string) error {
+func (m *Meta) RenameObject(object *types.Object, sourceObject string) error {
 	err := m.Client.RenameObject(object, sourceObject, nil)
 	return err
 }
 
-func (m *Meta) ReplaceObjectMetas(object *Object) error {
+func (m *Meta) ReplaceObjectMetas(object *types.Object) error {
 	err := m.Client.ReplaceObjectMetas(object, nil)
 	return err
 }
 
-func (m *Meta) PutObjMapEntry(objMap *ObjMap) error {
+func (m *Meta) PutObjMapEntry(objMap *types.ObjMap) error {
 	err := m.Client.PutObjectMap(objMap, nil)
 	return err
 }
 
-func (m *Meta) DeleteObject(object *Object, DeleteMarker bool, objMap *ObjMap) (err error) {
+func (m *Meta) DeleteObject(object *types.Object, DeleteMarker bool, objMap *types.ObjMap) (err error) {
 	var tx *sql.Tx
 	tx, err = m.Client.NewTrans()
 	if err != nil {
@@ -189,7 +190,7 @@ func (m *Meta) DeleteObject(object *Object, DeleteMarker bool, objMap *ObjMap) (
 	return m.Client.UpdateUsage(object.BucketName, -object.Size, tx)
 }
 
-func (m *Meta) UpdateGlacierObject(targetObject, sourceObject *Object, isFreezer bool) (err error) {
+func (m *Meta) UpdateGlacierObject(targetObject, sourceObject *types.Object, isFreezer bool) (err error) {
 	var tx *sql.Tx
 	tx, err = m.Client.NewTrans()
 	if err != nil {
@@ -229,7 +230,7 @@ func (m *Meta) UpdateGlacierObject(targetObject, sourceObject *Object, isFreezer
 	return err
 }
 
-func (m *Meta) AppendObject(object *Object, isExist bool) error {
+func (m *Meta) AppendObject(object *types.Object, isExist bool) error {
 	tx, err := m.Client.NewTrans()
 	if err != nil {
 		return err

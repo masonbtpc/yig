@@ -2,14 +2,15 @@ package meta
 
 import (
 	"database/sql"
-	. "github.com/journeymidnight/yig/meta/types"
+
+	"github.com/journeymidnight/yig/meta/types"
 )
 
-func (m *Meta) GetMultipart(bucketName, objectName, uploadId string) (multipart Multipart, err error) {
+func (m *Meta) GetMultipart(bucketName, objectName, uploadId string) (multipart types.Multipart, err error) {
 	return m.Client.GetMultipart(bucketName, objectName, uploadId)
 }
 
-func (m *Meta) DeleteMultipart(multipart Multipart) (err error) {
+func (m *Meta) DeleteMultipart(multipart types.Multipart) (err error) {
 	tx, err := m.Client.NewTrans()
 	if err != nil {
 		return err
@@ -35,7 +36,7 @@ func (m *Meta) DeleteMultipart(multipart Multipart) (err error) {
 	return
 }
 
-func (m *Meta) PutObjectPart(multipart Multipart, part Part) (err error) {
+func (m *Meta) PutObjectPart(multipart types.Multipart, part types.Part) (err error) {
 	tx, err := m.Client.NewTrans()
 	if err != nil {
 		return err
@@ -61,7 +62,7 @@ func (m *Meta) PutObjectPart(multipart Multipart, part Part) (err error) {
 	return
 }
 
-func (m *Meta) RenameObjectPart(object *Object, sourceObject string) (err error) {
+func (m *Meta) RenameObjectPart(object *types.Object, sourceObject string) (err error) {
 	var tx *sql.Tx
 	tx, err = m.Client.NewTrans()
 	if err != nil {

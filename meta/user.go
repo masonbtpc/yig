@@ -1,7 +1,7 @@
 package meta
 
 import (
-	. "github.com/journeymidnight/yig/error"
+	e "github.com/journeymidnight/yig/error"
 	"github.com/journeymidnight/yig/helper"
 	"github.com/journeymidnight/yig/redis"
 )
@@ -26,7 +26,7 @@ func (m *Meta) GetUserBuckets(userId string, willNeed bool) (buckets []string, e
 	buckets, ok := bs.([]string)
 	if !ok {
 		helper.Logger.Info("Cast bs failed:", bs)
-		err = ErrInternalError
+		err = e.ErrInternalError
 		return
 	}
 	return buckets, nil
@@ -38,7 +38,7 @@ func (m *Meta) AddBucketForUser(bucketName string, userId string) (err error) {
 		return err
 	}
 	if len(buckets)+1 > BUCKET_NUMBER_LIMIT {
-		return ErrTooManyBuckets
+		return e.ErrTooManyBuckets
 	}
 	return m.Client.AddBucketForUser(bucketName, userId)
 }

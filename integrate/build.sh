@@ -10,7 +10,7 @@ case $DATABASE in
         ;;
     tidb)
         echo "Building Yig with TiDB"
-        db_info="root:@tcp(10.5.0.17:4000)/yigdb"
+        db_info="yig:Bl@rgF1ght@tcp(10.5.0.17:4000)/yigdb"
         meta_store="tidb"
         ;;
     * )

@@ -14,6 +14,7 @@ const (
 type Meta struct {
 	Client client.Client
 	Cache  MetaCache
+	Type   string
 }
 
 func New(myCacheType CacheType) *Meta {
@@ -22,8 +23,10 @@ func New(myCacheType CacheType) *Meta {
 	}
 	if helper.CONFIG.MetaStore == "tidb" {
 		meta.Client = tidbclient.NewTidbClient()
+		meta.Type = "tidb"
 	} else if helper.CONFIG.MetaStore == "cockroachdb" {
 		meta.Client = cockroachdb.NewCockroachDBclient()
+		meta.Type = "cockroachdb"
 	} else {
 		panic("unsupported metastore")
 	}

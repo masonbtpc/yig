@@ -1,10 +1,10 @@
 package tidbclient
 
 import (
-	. "github.com/journeymidnight/yig/meta/types"
+	"github.com/journeymidnight/yig/meta/types"
 )
 
-func (t *TidbClient) GetClusters() (cluster []Cluster, err error) {
+func (t *TidbClient) GetClusters() (cluster []types.Cluster, err error) {
 	sqltext := "select fsid,pool,weight from cluster"
 	rows, err := t.Client.Query(sqltext)
 	if err != nil {
@@ -12,7 +12,7 @@ func (t *TidbClient) GetClusters() (cluster []Cluster, err error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		c := Cluster{}
+		c := types.Cluster{}
 		err = rows.Scan(&c.Fsid, &c.Pool, &c.Weight)
 		cluster = append(cluster, c)
 		if err != nil {

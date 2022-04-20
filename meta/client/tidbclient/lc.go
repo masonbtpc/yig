@@ -4,10 +4,10 @@ import (
 	"database/sql"
 
 	"github.com/journeymidnight/yig/helper"
-	. "github.com/journeymidnight/yig/meta/types"
+	"github.com/journeymidnight/yig/meta/types"
 )
 
-func (t *TidbClient) PutBucketToLifeCycle(lifeCycle LifeCycle) error {
+func (t *TidbClient) PutBucketToLifeCycle(lifeCycle types.LifeCycle) error {
 	sqltext := "insert into lifecycle(bucketname,status) values (?,?);"
 	_, err := t.Client.Exec(sqltext, lifeCycle.BucketName, lifeCycle.Status)
 	if err != nil {
@@ -17,7 +17,7 @@ func (t *TidbClient) PutBucketToLifeCycle(lifeCycle LifeCycle) error {
 	return nil
 }
 
-func (t *TidbClient) RemoveBucketFromLifeCycle(bucket Bucket) error {
+func (t *TidbClient) RemoveBucketFromLifeCycle(bucket types.Bucket) error {
 	sqltext := "delete from lifecycle where bucketname=?;"
 	_, err := t.Client.Exec(sqltext, bucket.Name)
 	if err != nil {
@@ -27,7 +27,7 @@ func (t *TidbClient) RemoveBucketFromLifeCycle(bucket Bucket) error {
 	return nil
 }
 
-func (t *TidbClient) ScanLifeCycle(limit int, marker string) (result ScanLifeCycleResult, err error) {
+func (t *TidbClient) ScanLifeCycle(limit int, marker string) (result types.ScanLifeCycleResult, err error) {
 	result.Truncated = false
 	sqltext := "select bucketname,status from lifecycle where bucketname > ? limit ?;"
 	rows, err := t.Client.Query(sqltext, marker, limit)
@@ -39,8 +39,8 @@ func (t *TidbClient) ScanLifeCycle(limit int, marker string) (result ScanLifeCyc
 		return
 	}
 	defer rows.Close()
-	result.Lcs = make([]LifeCycle, 0, limit)
-	var lc LifeCycle
+	result.Lcs = make([]types.LifeCycle, 0, limit)
+	var lc types.LifeCycle
 	for rows.Next() {
 		err = rows.Scan(
 			&lc.BucketName,

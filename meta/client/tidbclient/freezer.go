@@ -2,22 +2,23 @@ package tidbclient
 
 import (
 	"database/sql"
-	. "github.com/journeymidnight/yig/error"
-	. "github.com/journeymidnight/yig/meta/types"
 	"time"
+
+	e "github.com/journeymidnight/yig/error"
+	"github.com/journeymidnight/yig/meta/types"
 )
 
-func (t *TidbClient) CreateFreezer(freezer *Freezer) (err error) {
+func (t *TidbClient) CreateFreezer(freezer *types.Freezer) (err error) {
 	sql, args := freezer.GetCreateSql()
 	_, err = t.Client.Exec(sql, args...)
 	return
 }
 
-func (t *TidbClient) GetFreezer(bucketName, objectName, version string) (freezer *Freezer, err error) {
+func (t *TidbClient) GetFreezer(bucketName, objectName, version string) (freezer *types.Freezer, err error) {
 	var lastmodifiedtime string
 	sqltext := "select bucketname,objectname,IFNULL(version,''),status,lifetime,lastmodifiedtime,IFNULL(location,''),IFNULL(pool,''),IFNULL(ownerid,''),IFNULL(size,'0'),IFNULL(objectid,''),IFNULL(etag,'') from restoreobjects where bucketname=? and objectname=?;"
 	row := t.Client.QueryRow(sqltext, bucketName, objectName)
-	freezer = &Freezer{}
+	freezer = &types.Freezer{}
 	err = row.Scan(
 		&freezer.BucketName,
 		&freezer.Name,
@@ -33,13 +34,13 @@ func (t *TidbClient) GetFreezer(bucketName, objectName, version string) (freezer
 		&freezer.Etag,
 	)
 	if err == sql.ErrNoRows {
-		err = ErrNoSuchKey
+		err = e.ErrNoSuchKey
 		return
 	} else if err != nil {
 		return
 	}
 	local, _ := time.LoadLocation("Local")
-	freezer.LastModifiedTime, _ = time.ParseInLocation(TIME_LAYOUT_TIDB, lastmodifiedtime, local)
+	freezer.LastModifiedTime, _ = time.ParseInLocation(types.TIME_LAYOUT_TIDB, lastmodifiedtime, local)
 	freezer.Parts, err = getFreezerParts(freezer.BucketName, freezer.Name, t.Client)
 	//build simple index for multipart
 	if len(freezer.Parts) != 0 {
@@ -47,15 +48,15 @@ func (t *TidbClient) GetFreezer(bucketName, objectName, version string) (freezer
 		for k, v := range freezer.Parts {
 			sortedPartNum[k-1] = v.Offset
 		}
-		freezer.PartsIndex = &SimpleIndex{Index: sortedPartNum}
+		freezer.PartsIndex = &types.SimpleIndex{Index: sortedPartNum}
 	}
 	return
 }
 
-func (t *TidbClient) GetFreezerStatus(bucketName, objectName, version string) (freezer *Freezer, err error) {
+func (t *TidbClient) GetFreezerStatus(bucketName, objectName, version string) (freezer *types.Freezer, err error) {
 	sqltext := "select bucketname,objectname,IFNULL(version,''),status from restoreobjects where bucketname=? and objectname=?;"
 	row := t.Client.QueryRow(sqltext, bucketName, objectName)
-	freezer = &Freezer{}
+	freezer = &types.Freezer{}
 	err = row.Scan(
 		&freezer.BucketName,
 		&freezer.Name,
@@ -63,7 +64,7 @@ func (t *TidbClient) GetFreezerStatus(bucketName, objectName, version string) (f
 		&freezer.Status,
 	)
 	if err == sql.ErrNoRows || freezer.Name != objectName {
-		err = ErrNoSuchKey
+		err = e.ErrNoSuchKey
 		return
 	}
 	return
@@ -78,7 +79,7 @@ func (t *TidbClient) UploadFreezerDate(bucketName, objectName string, lifetime i
 	return nil
 }
 
-func (t *TidbClient) DeleteFreezer(bucketName, objectName string, tx DB) (err error) {
+func (t *TidbClient) DeleteFreezer(bucketName, objectName string, tx types.DB) (err error) {
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {
@@ -107,8 +108,8 @@ func (t *TidbClient) DeleteFreezer(bucketName, objectName string, tx DB) (err er
 }
 
 //util function
-func getFreezerParts(bucketName, objectName string, cli *sql.DB) (parts map[int]*Part, err error) {
-	parts = make(map[int]*Part)
+func getFreezerParts(bucketName, objectName string, cli *sql.DB) (parts map[int]*types.Part, err error) {
+	parts = make(map[int]*types.Part)
 	sqltext := "select partnumber,size,objectid,offset,etag,lastmodified,initializationvector from restoreobjectpart where bucketname=? and objectname=?;"
 	rows, err := cli.Query(sqltext, bucketName, objectName)
 	if err != nil {
@@ -116,7 +117,7 @@ func getFreezerParts(bucketName, objectName string, cli *sql.DB) (parts map[int]
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var p *Part = &Part{}
+		var p *types.Part = &types.Part{}
 		err = rows.Scan(
 			&p.PartNumber,
 			&p.Size,

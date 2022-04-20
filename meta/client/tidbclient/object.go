@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"time"
 
-	. "github.com/journeymidnight/yig/error"
-	. "github.com/journeymidnight/yig/meta/types"
+	e "github.com/journeymidnight/yig/error"
+	"github.com/journeymidnight/yig/meta/types"
 	"github.com/xxtea/xxtea-go/xxtea"
 )
 
-func (t *TidbClient) GetObject(bucketName, objectName, version string) (object *Object, err error) {
+func (t *TidbClient) GetObject(bucketName, objectName, version string) (object *types.Object, err error) {
 	var ibucketname, iname, customattributes, acl, lastModifiedTime string
 	var iversion uint64
 
@@ -27,7 +27,7 @@ func (t *TidbClient) GetObject(bucketName, objectName, version string) (object *
 		sqltext += "and version=?;"
 		row = t.Client.QueryRow(sqltext, bucketName, objectName, version)
 	}
-	object = &Object{}
+	object = &types.Object{}
 	err = row.Scan(
 		&ibucketname,
 		&iname,
@@ -51,7 +51,7 @@ func (t *TidbClient) GetObject(bucketName, objectName, version string) (object *
 		&object.StorageClass,
 	)
 	if err == sql.ErrNoRows {
-		err = ErrNoSuchKey
+		err = e.ErrNoSuchKey
 		return
 	} else if err != nil {
 		return
@@ -77,16 +77,16 @@ func (t *TidbClient) GetObject(bucketName, objectName, version string) (object *
 		for k, v := range object.Parts {
 			sortedPartNum[k-1] = v.Offset
 		}
-		object.PartsIndex = &SimpleIndex{Index: sortedPartNum}
+		object.PartsIndex = &types.SimpleIndex{Index: sortedPartNum}
 	}
 	var reversedTime uint64
 	timestamp := math.MaxUint64 - reversedTime
 	timeData := []byte(strconv.FormatUint(timestamp, 10))
-	object.VersionId = hex.EncodeToString(xxtea.Encrypt(timeData, XXTEA_KEY))
+	object.VersionId = hex.EncodeToString(xxtea.Encrypt(timeData, types.XXTEA_KEY))
 	return
 }
 
-func (t *TidbClient) GetAllObject(bucketName, objectName, version string) (object []*Object, err error) {
+func (t *TidbClient) GetAllObject(bucketName, objectName, version string) (object []*types.Object, err error) {
 	sqltext := "select version from objects where bucketname=? and name=?;"
 	var versions []string
 	rows, err := t.Client.Query(sqltext, bucketName, objectName)
@@ -103,7 +103,7 @@ func (t *TidbClient) GetAllObject(bucketName, objectName, version string) (objec
 		versions = append(versions, sversion)
 	}
 	for _, v := range versions {
-		var obj *Object
+		var obj *types.Object
 		obj, err = t.GetObject(bucketName, objectName, v)
 		if err != nil {
 			return
@@ -113,19 +113,19 @@ func (t *TidbClient) GetAllObject(bucketName, objectName, version string) (objec
 	return
 }
 
-func (t *TidbClient) UpdateObjectAttrs(object *Object) error {
+func (t *TidbClient) UpdateObjectAttrs(object *types.Object) error {
 	sql, args := object.GetUpdateAttrsSql()
 	_, err := t.Client.Exec(sql, args...)
 	return err
 }
 
-func (t *TidbClient) UpdateObjectAcl(object *Object) error {
+func (t *TidbClient) UpdateObjectAcl(object *types.Object) error {
 	sql, args := object.GetUpdateAclSql()
 	_, err := t.Client.Exec(sql, args...)
 	return err
 }
 
-func (t *TidbClient) RenameObject(object *Object, sourceObject string, tx DB) (err error) {
+func (t *TidbClient) RenameObject(object *types.Object, sourceObject string, tx types.DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}
@@ -134,7 +134,7 @@ func (t *TidbClient) RenameObject(object *Object, sourceObject string, tx DB) (e
 	return
 }
 
-func (t *TidbClient) ReplaceObjectMetas(object *Object, tx DB) (err error) {
+func (t *TidbClient) ReplaceObjectMetas(object *types.Object, tx types.DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}
@@ -143,7 +143,7 @@ func (t *TidbClient) ReplaceObjectMetas(object *Object, tx DB) (err error) {
 	return
 }
 
-func (t *TidbClient) UpdateAppendObject(object *Object, tx DB) (err error) {
+func (t *TidbClient) UpdateAppendObject(object *types.Object, tx types.DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}
@@ -152,7 +152,7 @@ func (t *TidbClient) UpdateAppendObject(object *Object, tx DB) (err error) {
 	return err
 }
 
-func (t *TidbClient) PutObject(object *Object, tx DB) (err error) {
+func (t *TidbClient) PutObject(object *types.Object, tx types.DB) (err error) {
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {
@@ -183,7 +183,7 @@ func (t *TidbClient) PutObject(object *Object, tx DB) (err error) {
 	return err
 }
 
-func (t *TidbClient) UpdateObject(object *Object, tx DB) (err error) {
+func (t *TidbClient) UpdateObject(object *types.Object, tx types.DB) (err error) {
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {
@@ -221,7 +221,7 @@ func (t *TidbClient) UpdateObject(object *Object, tx DB) (err error) {
 	return nil
 }
 
-func (t *TidbClient) DeleteObject(object *Object, tx DB) (err error) {
+func (t *TidbClient) DeleteObject(object *types.Object, tx types.DB) (err error) {
 	if tx == nil {
 		tx, err = t.Client.Begin()
 		if err != nil {
@@ -253,8 +253,8 @@ func (t *TidbClient) DeleteObject(object *Object, tx DB) (err error) {
 }
 
 //util function
-func getParts(bucketName, objectName string, version uint64, cli *sql.DB) (parts map[int]*Part, err error) {
-	parts = make(map[int]*Part)
+func getParts(bucketName, objectName string, version uint64, cli *sql.DB) (parts map[int]*types.Part, err error) {
+	parts = make(map[int]*types.Part)
 	sqltext := "select partnumber,size,objectid,offset,etag,lastmodified,initializationvector from objectpart where bucketname=? and objectname=? and version=?;"
 	rows, err := cli.Query(sqltext, bucketName, objectName, version)
 	if err != nil {
@@ -262,7 +262,7 @@ func getParts(bucketName, objectName string, version uint64, cli *sql.DB) (parts
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var p *Part = &Part{}
+		var p *types.Part = &types.Part{}
 		err = rows.Scan(
 			&p.PartNumber,
 			&p.Size,

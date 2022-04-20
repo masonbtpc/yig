@@ -1,13 +1,14 @@
 package tidbclient
 
 import (
-	. "github.com/journeymidnight/yig/meta/types"
 	"strconv"
+
+	"github.com/journeymidnight/yig/meta/types"
 )
 
 //objmap
-func (t *TidbClient) GetObjectMap(bucketName, objectName string) (objMap *ObjMap, err error) {
-	objMap = &ObjMap{}
+func (t *TidbClient) GetObjectMap(bucketName, objectName string) (objMap *types.ObjMap, err error) {
+	objMap = &types.ObjMap{}
 	sqltext := "select bucketname,objectname,nullvernum from objmap where bucketname=? and objectName=?;"
 	err = t.Client.QueryRow(sqltext, bucketName, objectName).Scan(
 		&objMap.BucketName,
@@ -21,7 +22,7 @@ func (t *TidbClient) GetObjectMap(bucketName, objectName string) (objMap *ObjMap
 	return
 }
 
-func (t *TidbClient) PutObjectMap(objMap *ObjMap, tx DB) (err error) {
+func (t *TidbClient) PutObjectMap(objMap *types.ObjMap, tx types.DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}
@@ -30,7 +31,7 @@ func (t *TidbClient) PutObjectMap(objMap *ObjMap, tx DB) (err error) {
 	return err
 }
 
-func (t *TidbClient) DeleteObjectMap(objMap *ObjMap, tx DB) (err error) {
+func (t *TidbClient) DeleteObjectMap(objMap *types.ObjMap, tx types.DB) (err error) {
 	if tx == nil {
 		tx = t.Client
 	}

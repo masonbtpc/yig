@@ -10,7 +10,7 @@ services:
     container_name: cockroachdb
     networks:
       vpcbr:
-        ipv4_address: "10.5.0.9"
+        ipv4_address: "10.5.0.17"
     ports:
       - "26257:26257"
       - "5432:5432"

@@ -24,9 +24,12 @@ function prepare_database(){
             docker cp sql/tidb.sql tidb:/tidb.sql
             docker exec tidb apk update > /dev/null 2>&1
             docker exec tidb apk add mysql-client > /dev/null 2>&1
-            # Create TiDB
+            docker exec tidb mysql -P 4000 -h 127.0.0.1 -e "create user yig identified by 'Bl@rgF1ght';"
             docker exec tidb mysql -P 4000 -h 127.0.0.1 -e "create database yigdb character set utf8;"
-            docker exec tidb mysql -P 4000 -h 127.0.0.1 -e "use yigdb;source /tidb.sql;"
+            docker exec tidb mysql -P 4000 -h 127.0.0.1 -e "grant all privileges on yigdb.* to yig;"
+            docker exec tidb mysql -P 4000 -h 127.0.0.1 -e "flush privileges;"
+            # Create TiDB
+            docker exec tidb mysql -u yig -pBl@rgF1ght -P 4000 -h 127.0.0.1 yigdb -e "source /tidb.sql;"
             ;;
         * )
             echo "Unknown database type specified. Please edit the Makefile. Exiting"

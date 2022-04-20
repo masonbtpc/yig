@@ -1,4 +1,6 @@
+#!/usr/bin/env bash
 DATABASE=$1
+DBPASS=$2
 
 function prepare_ceph(){
 	docker exec ceph ceph osd pool create tiger 32
@@ -11,6 +13,7 @@ function prepare_database(){
         cockroachdb)
             echo "Preparing Yig for CockroachDB metastore"
             # Prepare Cockroach Environment
+            # Note: can't set password in insecure mode with cockroachdb; omitted
             docker cp sql/crdb.sql cockroachdb:/cockroach/crdb.sql
             docker exec cockroachdb bash -c "echo 'create user yig;' | cockroach sql --insecure" > /dev/null 2>&1
             docker exec cockroachdb bash -c "echo 'create database yigdb;'| cockroach sql --insecure" > /dev/null 2>&1
@@ -24,7 +27,7 @@ function prepare_database(){
             docker cp sql/tidb.sql tidb:/tidb.sql
             docker exec tidb apk update > /dev/null 2>&1
             docker exec tidb apk add mysql-client > /dev/null 2>&1
-            docker exec tidb mysql -P 4000 -h 127.0.0.1 -e "create user yig identified by 'Bl@rgF1ght';"
+            docker exec tidb mysql -P 4000 -h 127.0.0.1 -e "create user yig identified by '"${DBPASS}"';"
             docker exec tidb mysql -P 4000 -h 127.0.0.1 -e "create database yigdb character set utf8;"
             docker exec tidb mysql -P 4000 -h 127.0.0.1 -e "grant all privileges on yigdb.* to yig;"
             docker exec tidb mysql -P 4000 -h 127.0.0.1 -e "flush privileges;"

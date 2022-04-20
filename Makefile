@@ -5,11 +5,12 @@ WORKDIR = /work
 BUILDROOT = build
 BUILDDIR = $(WORKDIR)/$(BUILDROOT)/$(REPO)
 DATABASE = cockroachdb # either tidb of cockroachdb. defaults to cockroachdb
+DBPASS = Bl@rgF1ght
 export GO111MODULE=on
 export GOPROXY=https://goproxy.io,direct
 
 build:
-	cd integrate && bash build.sh $(BUILDDIR) $(DATABASE)
+	cd integrate && bash build.sh $(BUILDDIR) $(DATABASE) $(DBPASS)
 
 build_internal:
 	go build $(URL)/$(REPO)
@@ -39,7 +40,7 @@ runlc:
 	cd integrate && sudo bash runlc.sh $(WORKDIR)
 
 env:
-	cd integrate && docker-compose stop && docker-compose rm --force && sudo rm -rf cephconf && docker-compose up -d $(DATABASE) && sleep 10 && bash prepare_env.sh $(DATABASE)
+	cd integrate && docker-compose stop && docker-compose rm --force && sudo rm -rf cephconf && docker-compose up -d $(DATABASE) && sleep 10 && bash prepare_env.sh $(DATABASE) $(DBPASS)
 	
 plugin:
 	cd plugins && bash build_plugins.sh $(BUILDDIR)

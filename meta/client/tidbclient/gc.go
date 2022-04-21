@@ -39,7 +39,7 @@ func (t *TidbClient) PutObjectToGarbageCollection(object *types.Object, tx types
 		return err
 	}
 	for _, p := range object.Parts {
-		psql, args := p.GetCreateGcSql(o.BucketName, o.ObjectName, version)
+		psql, args := p.GetCreateGcSql("tidb", o.BucketName, o.ObjectName, version)
 		_, err = tx.Exec(psql, args...)
 		if err != nil {
 			return err
@@ -148,7 +148,7 @@ func (t *TidbClient) PutFreezerToGarbageCollection(object *types.Freezer, tx typ
 		return err
 	}
 	for _, p := range object.Parts {
-		psql, args := p.GetCreateGcSql(o.BucketName, o.ObjectName, version)
+		psql, args := p.GetCreateGcSql("tidb", o.BucketName, o.ObjectName, version)
 		_, err = tx.Exec(psql, args...)
 		if err != nil {
 			return err

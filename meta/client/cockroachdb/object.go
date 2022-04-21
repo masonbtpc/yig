@@ -114,13 +114,13 @@ func (t *CockroachDBClient) GetAllObject(bucketName, objectName, version string)
 }
 
 func (t *CockroachDBClient) UpdateObjectAttrs(object *types.Object) error {
-	sql, args := object.GetUpdateAttrsSql()
+	sql, args := object.GetUpdateAttrsSql("crdb")
 	_, err := t.Client.Exec(sql, args...)
 	return err
 }
 
 func (t *CockroachDBClient) UpdateObjectAcl(object *types.Object) error {
-	sql, args := object.GetUpdateAclSql()
+	sql, args := object.GetUpdateAclSql("crdb")
 	_, err := t.Client.Exec(sql, args...)
 	return err
 }
@@ -129,7 +129,7 @@ func (t *CockroachDBClient) RenameObject(object *types.Object, sourceObject stri
 	if tx == nil {
 		tx = t.Client
 	}
-	sql, args := object.GetUpdateNameSql(sourceObject)
+	sql, args := object.GetUpdateNameSql("crdb", sourceObject)
 	_, err = tx.Exec(sql, args...)
 	return
 }
@@ -138,7 +138,7 @@ func (t *CockroachDBClient) ReplaceObjectMetas(object *types.Object, tx types.DB
 	if tx == nil {
 		tx = t.Client
 	}
-	sql, args := object.GetReplaceObjectMetasSql()
+	sql, args := object.GetReplaceObjectMetasSql("crdb")
 	_, err = tx.Exec(sql, args...)
 	return
 }
@@ -147,7 +147,7 @@ func (t *CockroachDBClient) UpdateAppendObject(object *types.Object, tx types.DB
 	if tx == nil {
 		tx = t.Client
 	}
-	sql, args := object.GetAppendSql()
+	sql, args := object.GetAppendSql("crdb")
 	_, err = tx.Exec(sql, args...)
 	return err
 }
@@ -167,13 +167,13 @@ func (t *CockroachDBClient) PutObject(object *types.Object, tx types.DB) (err er
 			}
 		}()
 	}
-	sql, args := object.GetCreateSql()
+	sql, args := object.GetCreateSql("crdb")
 	_, err = tx.Exec(sql, args...)
 	if object.Parts != nil {
 		v := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 		version := strconv.FormatUint(v, 10)
 		for _, p := range object.Parts {
-			psql, args := p.GetCreateSql(object.BucketName, object.Name, version)
+			psql, args := p.GetCreateSql("crdb", object.BucketName, object.Name, version)
 			_, err = tx.Exec(psql, args...)
 			if err != nil {
 				return err
@@ -207,11 +207,11 @@ func (t *CockroachDBClient) UpdateObject(object *types.Object, tx types.DB) (err
 		return err
 	}
 
-	sql, args := object.GetUpdateSql()
+	sql, args := object.GetUpdateSql("crdb")
 	_, err = tx.Exec(sql, args...)
 	if object.Parts != nil {
 		for _, p := range object.Parts {
-			psql, args := p.GetCreateSql(object.BucketName, object.Name, version)
+			psql, args := p.GetCreateSql("crdb", object.BucketName, object.Name, version)
 			_, err = tx.Exec(psql, args...)
 			if err != nil {
 				return err

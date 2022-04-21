@@ -285,7 +285,7 @@ func (t *TidbClient) RenameObjectPart(object *types.Object, sourceObject string,
 	if tx == nil {
 		tx = t.Client
 	}
-	sql, args := object.GetUpdateObjectPartNameSql(sourceObject)
+	sql, args := object.GetUpdateObjectPartNameSql("tidb", sourceObject)
 	_, err = tx.Exec(sql, args...)
 	return err
 }

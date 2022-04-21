@@ -285,7 +285,7 @@ func (t *CockroachDBClient) RenameObjectPart(object *types.Object, sourceObject 
 	if tx == nil {
 		tx = t.Client
 	}
-	sql, args := object.GetUpdateObjectPartNameSql(sourceObject)
+	sql, args := object.GetUpdateObjectPartNameSql("crdb", sourceObject)
 	_, err = tx.Exec(sql, args...)
 	return err
 }

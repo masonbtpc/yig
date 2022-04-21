@@ -20,21 +20,34 @@ type Freezer struct {
 	LifeTime         int
 }
 
-func (o *Freezer) GetCreateSql() (string, []interface{}) {
+func (o *Freezer) GetCreateSql(client string) (string, []interface{}) {
+	var sql string
 	// TODO Multi-version control
 	lastModifiedTime := o.LastModifiedTime.Format(CREATE_TIME_LAYOUT)
-	sql := "insert into restoreobjects(bucketname,objectname,status,lifetime,lastmodifiedtime) values($1,$2,$3,$4,$5)"
+	switch client {
+	case "crdb":
+		sql = "insert into restoreobjects(bucketname,objectname,status,lifetime,lastmodifiedtime) values($1,$2,$3,$4,$5)"
+	case "tidb":
+		sql = "insert into restoreobjects(bucketname,objectname,status,lifetime,lastmodifiedtime) values(?,?,?,?,?)"
+
+	}
 	args := []interface{}{o.BucketName, o.Name, o.Status, o.LifeTime, lastModifiedTime}
 	return sql, args
 }
 
-func (o *Freezer) GetUpdateSql(status Status) (string, []interface{}) {
+func (o *Freezer) GetUpdateSql(client string, status Status) (string, []interface{}) {
 	// TODO Multi-version control
 	// version := math.MaxUint64 - uint64(o.LastModifiedTime.UnixNano())
+	var sql string
 	lastModifiedTime := o.LastModifiedTime.Format(CREATE_TIME_LAYOUT)
-	sql := "update restoreobjects set status=$1,lastmodifiedtime=$2,location=$3,pool=$4," +
-		"ownerid=$5,size=$6,etag=$7 where bucketname=$8 and objectname=$9 and status=$10"
+	switch client {
+	case "crdb":
+		sql = "update restoreobjects set status=$1,lastmodifiedtime=$2,location=$3,pool=$4," +
+			"ownerid=$5,size=$6,etag=$7 where bucketname=$8 and objectname=$9 and status=$10"
+	case "tidb":
+		sql = "update restoreobjects set status=?,lastmodifiedtime=?,location=?,pool=?," +
+			"ownerid=?,size=?,etag=? where bucketname=? and objectname=? and status=?"
+	}
 	args := []interface{}{status, lastModifiedTime, o.Location, o.Pool, o.OwnerId, o.Size, o.Etag, o.BucketName, o.Name, o.Status}
-
 	return sql, args
 }

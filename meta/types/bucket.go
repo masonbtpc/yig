@@ -49,8 +49,8 @@ func (b *Bucket) String() (s string) {
 	return
 }
 
-//Tidb related function
-func (b Bucket) GetUpdateSql() (string, []interface{}) {
+func (b Bucket) GetUpdateSql(client string) (string, []interface{}) {
+	var sql string
 	acl, _ := json.Marshal(b.ACL)
 	cors, _ := json.Marshal(b.CORS)
 	logging, _ := json.Marshal(b.BucketLogging)
@@ -58,12 +58,18 @@ func (b Bucket) GetUpdateSql() (string, []interface{}) {
 	bucket_policy, _ := json.Marshal(b.Policy)
 	website, _ := json.Marshal(b.Website)
 	encryption, _ := json.Marshal(b.Encryption)
-	sql := "update buckets set bucketname=$1,acl=$2,policy=$3,cors=$4,logging=$5,lc=$6,website=$7,encryption=$8,uid=$9,versioning=$10 where bucketname=$11"
+	switch client {
+	case "crdb":
+		sql = "update buckets set bucketname=$1,acl=$2,policy=$3,cors=$4,logging=$5,lc=$6,website=$7,encryption=$8,uid=$9,versioning=$10 where bucketname=$11"
+	case "tidb":
+		sql = "update buckets set bucketname=?,acl=?,policy=?,cors=?,logging=?,lc=?,website=?,encryption=?,uid=?,versioning=? where bucketname=?"
+	}
 	args := []interface{}{b.Name, acl, bucket_policy, cors, logging, lc, website, encryption, b.OwnerId, b.Versioning, b.Name}
 	return sql, args
 }
 
-func (b Bucket) GetCreateSql() (string, []interface{}) {
+func (b Bucket) GetCreateSql(client string) (string, []interface{}) {
+	var sql string
 	acl, _ := json.Marshal(b.ACL)
 	cors, _ := json.Marshal(b.CORS)
 	logging, _ := json.Marshal(b.BucketLogging)
@@ -72,8 +78,15 @@ func (b Bucket) GetCreateSql() (string, []interface{}) {
 	website, _ := json.Marshal(b.Website)
 	encryption, _ := json.Marshal(b.Encryption)
 	createTime := b.CreateTime.Format(CREATE_TIME_LAYOUT)
-	sql := "insert into buckets(bucketname,acl,cors,logging,lc,uid,policy,website,encryption,createtime,usages,versioning) " +
-		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12);"
+	switch client {
+	case "crdb":
+		sql = "insert into buckets(bucketname,acl,cors,logging,lc,uid,policy,website,encryption,createtime,usages,versioning) " +
+			"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12);"
+	case "tidb":
+		sql = "insert into buckets(bucketname,acl,cors,logging,lc,uid,policy,website,encryption,createtime,usages,versioning) " +
+			"values(?,?,?,?,?,?,?,?,?,?,?,?);"
+
+	}
 	args := []interface{}{b.Name, acl, cors, logging, lc, b.OwnerId, bucket_policy, website, encryption, createTime, b.Usage, b.Versioning}
 	return sql, args
 }

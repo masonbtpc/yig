@@ -9,7 +9,7 @@ import (
 )
 
 func (t *CockroachDBClient) CreateFreezer(freezer *types.Freezer) (err error) {
-	sql, args := freezer.GetCreateSql()
+	sql, args := freezer.GetCreateSql("crdb")
 	_, err = t.Client.Exec(sql, args...)
 	return
 }

@@ -114,13 +114,13 @@ func (t *TidbClient) GetAllObject(bucketName, objectName, version string) (objec
 }
 
 func (t *TidbClient) UpdateObjectAttrs(object *types.Object) error {
-	sql, args := object.GetUpdateAttrsSql()
+	sql, args := object.GetUpdateAttrsSql("tidb")
 	_, err := t.Client.Exec(sql, args...)
 	return err
 }
 
 func (t *TidbClient) UpdateObjectAcl(object *types.Object) error {
-	sql, args := object.GetUpdateAclSql()
+	sql, args := object.GetUpdateAclSql("tidb")
 	_, err := t.Client.Exec(sql, args...)
 	return err
 }
@@ -129,7 +129,7 @@ func (t *TidbClient) RenameObject(object *types.Object, sourceObject string, tx 
 	if tx == nil {
 		tx = t.Client
 	}
-	sql, args := object.GetUpdateNameSql(sourceObject)
+	sql, args := object.GetUpdateNameSql("tidb", sourceObject)
 	_, err = tx.Exec(sql, args...)
 	return
 }
@@ -138,7 +138,7 @@ func (t *TidbClient) ReplaceObjectMetas(object *types.Object, tx types.DB) (err 
 	if tx == nil {
 		tx = t.Client
 	}
-	sql, args := object.GetReplaceObjectMetasSql()
+	sql, args := object.GetReplaceObjectMetasSql("tidb")
 	_, err = tx.Exec(sql, args...)
 	return
 }
@@ -147,7 +147,7 @@ func (t *TidbClient) UpdateAppendObject(object *types.Object, tx types.DB) (err 
 	if tx == nil {
 		tx = t.Client
 	}
-	sql, args := object.GetAppendSql()
+	sql, args := object.GetAppendSql("tidb")
 	_, err = tx.Exec(sql, args...)
 	return err
 }
@@ -167,13 +167,13 @@ func (t *TidbClient) PutObject(object *types.Object, tx types.DB) (err error) {
 			}
 		}()
 	}
-	sql, args := object.GetCreateSql()
+	sql, args := object.GetCreateSql("tidb")
 	_, err = tx.Exec(sql, args...)
 	if object.Parts != nil {
 		v := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 		version := strconv.FormatUint(v, 10)
 		for _, p := range object.Parts {
-			psql, args := p.GetCreateSql(object.BucketName, object.Name, version)
+			psql, args := p.GetCreateSql("tidb", object.BucketName, object.Name, version)
 			_, err = tx.Exec(psql, args...)
 			if err != nil {
 				return err
@@ -207,11 +207,11 @@ func (t *TidbClient) UpdateObject(object *types.Object, tx types.DB) (err error)
 		return err
 	}
 
-	sql, args := object.GetUpdateSql()
+	sql, args := object.GetUpdateSql("tidb")
 	_, err = tx.Exec(sql, args...)
 	if object.Parts != nil {
 		for _, p := range object.Parts {
-			psql, args := p.GetCreateSql(object.BucketName, object.Name, version)
+			psql, args := p.GetCreateSql("tidb", object.BucketName, object.Name, version)
 			_, err = tx.Exec(psql, args...)
 			if err != nil {
 				return err

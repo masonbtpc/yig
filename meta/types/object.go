@@ -140,74 +140,132 @@ func (o *Object) GetVersionId() string {
 
 //Tidb related function
 
-func (o *Object) GetCreateSql() (string, []interface{}) {
+func (o *Object) GetCreateSql(client string) (string, []interface{}) {
+	var sql string
 	version := math.MaxUint64 - uint64(o.LastModifiedTime.UnixNano())
 	customAttributes, _ := json.Marshal(o.CustomAttributes)
 	acl, _ := json.Marshal(o.ACL)
 	lastModifiedTime := o.LastModifiedTime.Format(CREATE_TIME_LAYOUT)
-	sql := "insert into objects(bucketname,name,version,location,pool,ownerid,size,objectid,lastmodifiedtime,etag," +
-		"contenttype,customattributes,acl,nullversion,deletemarker,ssetype,encryptionkey,initializationvector,type,storageclass) " +
-		"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)"
+	switch client {
+	case "crdb":
+		sql = "insert into objects(bucketname,name,version,location,pool,ownerid,size,objectid,lastmodifiedtime,etag," +
+			"contenttype,customattributes,acl,nullversion,deletemarker,ssetype,encryptionkey,initializationvector,type,storageclass) " +
+			"values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)"
+	case "tidb":
+		sql = "insert into objects(bucketname,name,version,location,pool,ownerid,size,objectid,lastmodifiedtime,etag," +
+			"contenttype,customattributes,acl,nullversion,deletemarker,ssetype,encryptionkey,initializationvector,type,storageclass) " +
+			"values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+	}
 	args := []interface{}{o.BucketName, o.Name, version, o.Location, o.Pool, o.OwnerId, o.Size, o.ObjectId,
 		lastModifiedTime, o.Etag, o.ContentType, customAttributes, acl, o.NullVersion, o.DeleteMarker,
 		o.SseType, o.EncryptionKey, o.InitializationVector, o.Type, o.StorageClass}
 	return sql, args
 }
 
-func (o *Object) GetAppendSql() (string, []interface{}) {
+func (o *Object) GetAppendSql(client string) (string, []interface{}) {
+	var sql string
 	version := math.MaxUint64 - uint64(o.LastModifiedTime.UnixNano())
 	lastModifiedTime := o.LastModifiedTime.Format(CREATE_TIME_LAYOUT)
-	sql := "update objects set lastmodifiedtime=$1, size=$2, version=$3 where bucketname=$4 and name=$5"
+	switch client {
+	case "crdb":
+		sql = "update objects set lastmodifiedtime=$1, size=$2, version=$3 where bucketname=$4 and name=$5"
+	case "tidb":
+		sql = "update objects set lastmodifiedtime=?, size=?, version=? where bucketname=? and name=?"
+	}
 	args := []interface{}{lastModifiedTime, o.Size, version, o.BucketName, o.Name}
 	return sql, args
 }
 
-func (o *Object) GetUpdateSql() (string, []interface{}) {
+func (o *Object) GetUpdateSql(client string) (string, []interface{}) {
+	var sql string
 	version := math.MaxUint64 - uint64(o.LastModifiedTime.UnixNano())
-	sql := "update objects set location=$1,pool=$2," +
-		"size=$3,objectid=$4,etag=$5,initializationvector=$6,storageclass=$7 where bucketname=$8 and name=$9 and version=$10"
+	switch client {
+	case "crdb":
+		sql = "update objects set location=$1,pool=$2," +
+			"size=$3,objectid=$4,etag=$5,initializationvector=$6,storageclass=$7 where bucketname=$8 and name=$9 and version=$10"
+	case "tidb":
+		sql = "update objects set location=?,pool=?," +
+			"size=?,objectid=?,etag=?,initializationvector=?,storageclass=? where bucketname=? and name=? and version=?"
+	}
+
 	args := []interface{}{o.Location, o.Pool, o.Size, o.ObjectId, o.Etag, o.InitializationVector, o.StorageClass, o.BucketName, o.Name, version}
 	return sql, args
 }
 
-func (o *Object) GetUpdateAclSql() (string, []interface{}) {
+func (o *Object) GetUpdateAclSql(client string) (string, []interface{}) {
+	var sql string
 	version := math.MaxUint64 - uint64(o.LastModifiedTime.UnixNano())
 	acl, _ := json.Marshal(o.ACL)
-	sql := "update objects set acl=$1 where bucketname=$2 and name=$3 and version=$4"
+	switch client {
+	case "crdb":
+		sql = "update objects set acl=$1 where bucketname=$2 and name=$3 and version=$4"
+	case "tidb":
+		sql = "update objects set acl=? where bucketname=? and name=? and version=?"
+	}
 	args := []interface{}{acl, o.BucketName, o.Name, version}
 	return sql, args
 }
 
-func (o *Object) GetUpdateAttrsSql() (string, []interface{}) {
+func (o *Object) GetUpdateAttrsSql(client string) (string, []interface{}) {
+	var sql string
 	customAttributes, _ := json.Marshal(o.CustomAttributes)
-	sql := "update objects set customattributes=$1 where bucketname=$2 and name=$3"
+	switch client {
+	case "crdb":
+		sql = "update objects set customattributes=$1 where bucketname=$2 and name=$3"
+	case "tidb":
+		sql = "update objects set customattributes=? where bucketname=? and name=?"
+	}
 	args := []interface{}{customAttributes, o.BucketName, o.Name}
 	return sql, args
 }
 
-func (o *Object) GetUpdateNameSql(sourceObject string) (string, []interface{}) {
+func (o *Object) GetUpdateNameSql(client, sourceObject string) (string, []interface{}) {
+	var sql string
 	version := math.MaxUint64 - uint64(o.LastModifiedTime.UnixNano())
-	sql := "update objects set name=$1 where bucketname=$2 and name=$3 and version=$4"
+	switch client {
+	case "crdb":
+		sql = "update objects set name=$1 where bucketname=$2 and name=$3 and version=$4"
+	case "tidb":
+		sql = "update objects set name=? where bucketname=? and name=? and version=?"
+	}
 	args := []interface{}{o.Name, o.BucketName, sourceObject, version}
 	return sql, args
 }
 
-func (o *Object) GetAddUsageSql() (string, []interface{}) {
-	sql := "update buckets set usages= usages + $1 where bucketname=$2"
+func (o *Object) GetAddUsageSql(client string) (string, []interface{}) {
+	var sql string
+	switch client {
+	case "crdb":
+		sql = "update buckets set usages= usages + $1 where bucketname=$2"
+	case "tidb":
+		sql = "update buckets set usages= usages + ? where bucketname=?"
+	}
 	args := []interface{}{o.Size, o.BucketName}
 	return sql, args
 }
 
-func (o *Object) GetSubUsageSql() (string, []interface{}) {
-	sql := "update buckets set usages= usages + $1 where bucketname=$2"
+func (o *Object) GetSubUsageSql(client string) (string, []interface{}) {
+	var sql string
+	switch client {
+	case "crdb":
+		sql = "update buckets set usages= usages + $1 where bucketname=$2"
+	case "tidb":
+		sql = "update buckets set usages= usages + ? where bucketname=?"
+	}
 	args := []interface{}{-o.Size, o.BucketName}
 	return sql, args
 }
 
 // TODO : with Version
-func (o *Object) GetReplaceObjectMetasSql() (string, []interface{}) {
+func (o *Object) GetReplaceObjectMetasSql(client string) (string, []interface{}) {
+	var sql string
 	customAttributes, _ := json.Marshal(o.CustomAttributes)
-	sql := "update objects set contenttype=$1,customattributes=$2,storageclass=$3 where bucketname=$4 and name=$5"
+	switch client {
+	case "crdb":
+		sql = "update objects set contenttype=$1,customattributes=$2,storageclass=$3 where bucketname=$4 and name=$5"
+	case "tidb":
+		sql = "update objects set contenttype=?,customattributes=?,storageclass=? where bucketname=? and name=?"
+	}
 	args := []interface{}{o.ContentType, customAttributes, o.StorageClass, o.BucketName, o.Name}
 	return sql, args
 }

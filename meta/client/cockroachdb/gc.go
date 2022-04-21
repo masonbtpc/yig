@@ -39,7 +39,7 @@ func (t *CockroachDBClient) PutObjectToGarbageCollection(object *types.Object, t
 		return err
 	}
 	for _, p := range object.Parts {
-		psql, args := p.GetCreateGcSql(o.BucketName, o.ObjectName, version)
+		psql, args := p.GetCreateGcSql("crdb", o.BucketName, o.ObjectName, version)
 		_, err = tx.Exec(psql, args...)
 		if err != nil {
 			return err
@@ -148,7 +148,7 @@ func (t *CockroachDBClient) PutFreezerToGarbageCollection(object *types.Freezer,
 		return err
 	}
 	for _, p := range object.Parts {
-		psql, args := p.GetCreateGcSql(o.BucketName, o.ObjectName, version)
+		psql, args := p.GetCreateGcSql("crdb", o.BucketName, o.ObjectName, version)
 		_, err = tx.Exec(psql, args...)
 		if err != nil {
 			return err

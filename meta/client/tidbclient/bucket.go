@@ -141,7 +141,7 @@ func (t *TidbClient) GetBuckets() (buckets []types.Bucket, err error) {
 
 //Actually this method is used to update bucket
 func (t *TidbClient) PutBucket(bucket types.Bucket) error {
-	sql, args := bucket.GetUpdateSql()
+	sql, args := bucket.GetUpdateSql("tidb")
 	_, err := t.Client.Exec(sql, args...)
 	if err != nil {
 		return err
@@ -161,7 +161,7 @@ func (t *TidbClient) CheckAndPutBucket(bucket types.Bucket) (bool, error) {
 	} else {
 		processed = true
 	}
-	sql, args := bucket.GetCreateSql()
+	sql, args := bucket.GetCreateSql("tidb")
 	_, err = t.Client.Exec(sql, args...)
 	return processed, err
 }

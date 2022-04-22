@@ -10,7 +10,7 @@ case $DATABASE in
         echo "Building Yig with CockroachDB"
         db_info="postgres://yig:"${DBPASS}"@10.5.0.17:26257/yigdb"
         meta_store="cockroachdb"
-        time_format="2006-01-02 15:04:05"
+        time_format="2006-01-02T15:04:05Z"
         ;;
     tidb)
         echo "Building Yig with TiDB"
@@ -35,4 +35,4 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     sed -i '' "s|time_format = \"[^\"]*\"|time_format = \"$time_format\"|" $PWD/yigconf/yig.toml
 fi
 
-#sudo docker run --rm -v ${BASEDIR}:${BUILDDIR} -w ${BUILDDIR} journeymidnight/yig bash -c 'make build_internal'
+sudo docker run --rm -v ${BASEDIR}:${BUILDDIR} -w ${BUILDDIR} journeymidnight/yig bash -c 'make build_internal'

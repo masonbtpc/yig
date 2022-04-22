@@ -8,6 +8,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/journeymidnight/yig/api/datatype"
 	"github.com/journeymidnight/yig/api/datatype/policy"
+	"github.com/journeymidnight/yig/helper"
 )
 
 const (
@@ -35,7 +36,7 @@ type Bucket struct {
 
 func (b *Bucket) String() (s string) {
 	s += "Name: " + b.Name + "\t"
-	s += "CreateTime: " + b.CreateTime.Format(CREATE_TIME_LAYOUT) + "\t"
+	s += "CreateTime: " + b.CreateTime.Format(helper.CONFIG.TimeFormat) + "\t"
 	s += "OwnerId: " + b.OwnerId + "\t"
 	s += "CORS: " + fmt.Sprintf("%+v", b.CORS) + "\t"
 	s += "ACL: " + fmt.Sprintf("%+v", b.ACL) + "\t"
@@ -77,7 +78,7 @@ func (b Bucket) GetCreateSql(client string) (string, []interface{}) {
 	bucket_policy, _ := json.Marshal(b.Policy)
 	website, _ := json.Marshal(b.Website)
 	encryption, _ := json.Marshal(b.Encryption)
-	createTime := b.CreateTime.Format(CREATE_TIME_LAYOUT)
+	createTime := b.CreateTime.Format(helper.CONFIG.TimeFormat)
 	switch client {
 	case "crdb":
 		sql = "insert into buckets(bucketname,acl,cors,logging,lc,uid,policy,website,encryption,createtime,usages,versioning) " +

@@ -1,6 +1,10 @@
 package types
 
-import "time"
+import (
+	"time"
+
+	"github.com/journeymidnight/yig/helper"
+)
 
 type Freezer struct {
 	Rowkey           []byte // Rowkey cache
@@ -23,7 +27,7 @@ type Freezer struct {
 func (o *Freezer) GetCreateSql(client string) (string, []interface{}) {
 	var sql string
 	// TODO Multi-version control
-	lastModifiedTime := o.LastModifiedTime.Format(CREATE_TIME_LAYOUT)
+	lastModifiedTime := o.LastModifiedTime.Format(helper.CONFIG.TimeFormat)
 	switch client {
 	case "crdb":
 		sql = "insert into restoreobjects(bucketname,objectname,status,lifetime,lastmodifiedtime) values($1,$2,$3,$4,$5)"
@@ -39,7 +43,7 @@ func (o *Freezer) GetUpdateSql(client string, status Status) (string, []interfac
 	// TODO Multi-version control
 	// version := math.MaxUint64 - uint64(o.LastModifiedTime.UnixNano())
 	var sql string
-	lastModifiedTime := o.LastModifiedTime.Format(CREATE_TIME_LAYOUT)
+	lastModifiedTime := o.LastModifiedTime.Format(helper.CONFIG.TimeFormat)
 	switch client {
 	case "crdb":
 		sql = "update restoreobjects set status=$1,lastmodifiedtime=$2,location=$3,pool=$4," +

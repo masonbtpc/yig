@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/journeymidnight/yig/api/datatype"
+	"github.com/journeymidnight/yig/helper"
 	"github.com/journeymidnight/yig/meta/util"
 	"github.com/xxtea/xxtea-go/xxtea"
 )
@@ -74,7 +75,7 @@ func (o *Object) String() (s string) {
 	s += "Location: " + o.Location + "\t"
 	s += "Pool: " + o.Pool + "\t"
 	s += "Object ID: " + o.ObjectId + "\t"
-	s += "Last Modified Time: " + o.LastModifiedTime.Format(CREATE_TIME_LAYOUT) + "\t"
+	s += "Last Modified Time: " + o.LastModifiedTime.Format(helper.CONFIG.TimeFormat) + "\t"
 	s += "Version: " + o.VersionId + "\t"
 	s += "Type: " + o.ObjectTypeToString() + "\t"
 	s += "StorageClass: " + o.StorageClass.ToString() + "\t"
@@ -145,7 +146,7 @@ func (o *Object) GetCreateSql(client string) (string, []interface{}) {
 	version := math.MaxUint64 - uint64(o.LastModifiedTime.UnixNano())
 	customAttributes, _ := json.Marshal(o.CustomAttributes)
 	acl, _ := json.Marshal(o.ACL)
-	lastModifiedTime := o.LastModifiedTime.Format(CREATE_TIME_LAYOUT)
+	lastModifiedTime := o.LastModifiedTime.Format(helper.CONFIG.TimeFormat)
 	switch client {
 	case "crdb":
 		sql = "insert into objects(bucketname,name,version,location,pool,ownerid,size,objectid,lastmodifiedtime,etag," +
@@ -165,7 +166,7 @@ func (o *Object) GetCreateSql(client string) (string, []interface{}) {
 func (o *Object) GetAppendSql(client string) (string, []interface{}) {
 	var sql string
 	version := math.MaxUint64 - uint64(o.LastModifiedTime.UnixNano())
-	lastModifiedTime := o.LastModifiedTime.Format(CREATE_TIME_LAYOUT)
+	lastModifiedTime := o.LastModifiedTime.Format(helper.CONFIG.TimeFormat)
 	switch client {
 	case "crdb":
 		sql = "update objects set lastmodifiedtime=$1, size=$2, version=$3 where bucketname=$4 and name=$5"

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	e "github.com/journeymidnight/yig/error"
+	"github.com/journeymidnight/yig/helper"
 	"github.com/journeymidnight/yig/meta/types"
 )
 
@@ -40,7 +41,7 @@ func (t *CockroachDBClient) GetFreezer(bucketName, objectName, version string) (
 		return
 	}
 	local, _ := time.LoadLocation("Local")
-	freezer.LastModifiedTime, _ = time.ParseInLocation(types.CREATE_TIME_LAYOUT, lastmodifiedtime, local)
+	freezer.LastModifiedTime, _ = time.ParseInLocation(helper.CONFIG.TimeFormat, lastmodifiedtime, local)
 	freezer.Parts, err = getFreezerParts(freezer.BucketName, freezer.Name, t.Client)
 	//build simple index for multipart
 	if len(freezer.Parts) != 0 {

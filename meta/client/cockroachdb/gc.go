@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/journeymidnight/yig/helper"
 	"github.com/journeymidnight/yig/meta/types"
 )
 
@@ -31,7 +32,7 @@ func (t *CockroachDBClient) PutObjectToGarbageCollection(object *types.Object, t
 	if len(o.Parts) > 0 {
 		hasPart = true
 	}
-	mtime := o.MTime.Format(types.CREATE_TIME_LAYOUT)
+	mtime := o.MTime.Format(helper.CONFIG.TimeFormat)
 	version := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 	sqltext := "insert into gc(bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) on conflict (bucketname, objectname, version) do nothing;"
 	_, err = tx.Exec(sqltext, o.BucketName, o.ObjectName, version, o.Location, o.Pool, o.ObjectId, o.Status, mtime, hasPart, o.TriedTimes)
@@ -140,7 +141,7 @@ func (t *CockroachDBClient) PutFreezerToGarbageCollection(object *types.Freezer,
 	if len(o.Parts) > 0 {
 		hasPart = true
 	}
-	mtime := o.MTime.Format(types.CREATE_TIME_LAYOUT)
+	mtime := o.MTime.Format(helper.CONFIG.TimeFormat)
 	version := math.MaxUint64 - uint64(object.LastModifiedTime.UnixNano())
 	sqltext := "insert into gc(bucketname,objectname,version,location,pool,objectid,status,mtime,part,triedtimes) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) on conflict (bucketname, objectname, version) do nothing;"
 	_, err = tx.Exec(sqltext, o.BucketName, o.ObjectName, version, o.Location, o.Pool, o.ObjectId, o.Status, mtime, hasPart, o.TriedTimes)
@@ -175,7 +176,7 @@ func (t *CockroachDBClient) GetGarbageCollection(bucketName, objectName, version
 		&hasPart,
 		&gc.TriedTimes,
 	)
-	gc.MTime, err = time.Parse(types.CREATE_TIME_LAYOUT, mtime)
+	gc.MTime, err = time.Parse(helper.CONFIG.TimeFormat, mtime)
 	if err != nil {
 		return
 	}

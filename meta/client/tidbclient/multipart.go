@@ -93,7 +93,7 @@ func (t *TidbClient) GetMultipart(bucketName, objectName, uploadId string) (mult
 		if e != nil {
 			return
 		}
-		p.LastModified = ts.Format(types.CREATE_TIME_LAYOUT)
+		p.LastModified = ts.Format(helper.CONFIG.TimeFormat)
 		multipart.Parts[p.PartNumber] = p
 		if err != nil {
 			return
@@ -120,7 +120,7 @@ func (t *TidbClient) PutObjectPart(multipart *types.Multipart, part *types.Part,
 	}
 
 	uploadtime := math.MaxUint64 - uint64(multipart.InitialTime.UnixNano())
-	lastt, err := time.Parse(types.CREATE_TIME_LAYOUT, part.LastModified)
+	lastt, err := time.Parse(helper.CONFIG.TimeFormat, part.LastModified)
 	if err != nil {
 		return
 	}
@@ -265,7 +265,7 @@ func (t *TidbClient) ListMultipartUploads(bucketName, keyMarker, uploadIdMarker,
 			timestamp := int64(math.MaxUint64 - uploadtime)
 			s := timestamp / 1e9
 			ns := timestamp % 1e9
-			upload.Initiated = time.Unix(s, ns).UTC().Format(types.CREATE_TIME_LAYOUT)
+			upload.Initiated = time.Unix(s, ns).UTC().Format(helper.CONFIG.TimeFormat)
 			uploads = append(uploads, upload)
 			count += 1
 		}

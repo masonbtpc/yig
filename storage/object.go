@@ -14,7 +14,7 @@ import (
 	"github.com/journeymidnight/yig/api/datatype"
 	"github.com/journeymidnight/yig/backend"
 	"github.com/journeymidnight/yig/crypto"
-	. "github.com/journeymidnight/yig/error"
+	e "github.com/journeymidnight/yig/error"
 	"github.com/journeymidnight/yig/helper"
 	"github.com/journeymidnight/yig/iam"
 	"github.com/journeymidnight/yig/iam/common"
@@ -188,7 +188,7 @@ func (yig *YigStorage) GetObject(object *meta.Object, startOffset int64,
 	var encryptionKey []byte
 	if object.SseType == crypto.S3.String() {
 		if yig.KMS == nil {
-			return ErrKMSNotConfigured
+			return e.ErrKMSNotConfigured
 		}
 		key, err := yig.KMS.UnsealKey(yig.KMS.GetKeyID(), object.EncryptionKey,
 			crypto.Context{object.BucketName: path.Join(object.BucketName, object.Name)})
@@ -341,17 +341,17 @@ func (yig *YigStorage) GetObjectInfo(bucketName string, objectName string,
 			break
 		case "authenticated-read":
 			if credential.UserId == "" {
-				err = ErrAccessDenied
+				err = e.ErrAccessDenied
 				return
 			}
 		case "bucket-owner-read", "bucket-owner-full-control":
 			if bucket.OwnerId != credential.UserId {
-				err = ErrAccessDenied
+				err = e.ErrAccessDenied
 				return
 			}
 		default:
 			if object.OwnerId != credential.UserId {
-				err = ErrAccessDenied
+				err = e.ErrAccessDenied
 				return
 			}
 		}
@@ -364,11 +364,11 @@ func (yig *YigStorage) GetObjectInfoByCtx(ctx api.RequestContext,
 	version string, credential common.Credential) (object *meta.Object, err error) {
 	bucket := ctx.BucketInfo
 	if bucket == nil {
-		return nil, ErrNoSuchBucket
+		return nil, e.ErrNoSuchBucket
 	}
 	object = ctx.ObjectInfo
 	if object == nil {
-		return nil, ErrNoSuchKey
+		return nil, e.ErrNoSuchKey
 	}
 	if version != "" {
 		object, err = yig.getObjWithVersion(ctx.BucketName, ctx.ObjectName, version)
@@ -383,17 +383,17 @@ func (yig *YigStorage) GetObjectInfoByCtx(ctx api.RequestContext,
 			break
 		case "authenticated-read":
 			if credential.UserId == "" {
-				err = ErrAccessDenied
+				err = e.ErrAccessDenied
 				return
 			}
 		case "bucket-owner-read", "bucket-owner-full-control":
 			if bucket.OwnerId != credential.UserId {
-				err = ErrAccessDenied
+				err = e.ErrAccessDenied
 				return
 			}
 		default:
 			if object.OwnerId != credential.UserId {
-				err = ErrAccessDenied
+				err = e.ErrAccessDenied
 				return
 			}
 		}
@@ -423,12 +423,12 @@ func (yig *YigStorage) GetObjectAcl(bucketName string, objectName string,
 	switch object.ACL.CannedAcl {
 	case "bucket-owner-full-control":
 		if bucket.OwnerId != credential.UserId {
-			err = ErrAccessDenied
+			err = e.ErrAccessDenied
 			return
 		}
 	default:
 		if object.OwnerId != credential.UserId {
-			err = ErrAccessDenied
+			err = e.ErrAccessDenied
 			return
 		}
 	}
@@ -465,11 +465,11 @@ func (yig *YigStorage) SetObjectAcl(bucketName string, objectName string, versio
 	switch bucket.ACL.CannedAcl {
 	case "bucket-owner-full-control":
 		if bucket.OwnerId != credential.UserId {
-			return ErrAccessDenied
+			return e.ErrAccessDenied
 		}
 	default:
 		if bucket.OwnerId != credential.UserId {
-			return ErrAccessDenied
+			return e.ErrAccessDenied
 		}
 	} // TODO policy and fancy ACL
 	var object *meta.Object
@@ -526,7 +526,7 @@ func (yig *YigStorage) PutObject(bucketName string, objectName string, credentia
 		break
 	default:
 		if bucket.OwnerId != credential.UserId {
-			return result, ErrBucketAccessForbidden
+			return result, e.ErrBucketAccessForbidden
 		}
 	}
 
@@ -542,7 +542,7 @@ func (yig *YigStorage) PutObject(bucketName string, objectName string, credentia
 
 	cluster, poolName := yig.pickClusterAndPool(bucketName, objectName, storageClass, size, false)
 	if cluster == nil {
-		return result, ErrInternalError
+		return result, e.ErrInternalError
 	}
 
 	dataReader := io.TeeReader(limitedDataReader, md5Writer)
@@ -574,7 +574,7 @@ func (yig *YigStorage) PutObject(bucketName string, objectName string, credentia
 		RecycleQueue <- maybeObjectToRecycle
 		helper.Logger.Error("Failed to write objects, already written",
 			bytesWritten, "total size", size)
-		return result, ErrIncompleteBody
+		return result, e.ErrIncompleteBody
 	}
 
 	calculatedMd5 := hex.EncodeToString(md5Writer.Sum(nil))
@@ -582,7 +582,7 @@ func (yig *YigStorage) PutObject(bucketName string, objectName string, credentia
 	if userMd5, ok := metadata["md5Sum"]; ok {
 		if userMd5 != "" && userMd5 != calculatedMd5 {
 			RecycleQueue <- maybeObjectToRecycle
-			return result, ErrBadDigest
+			return result, e.ErrBadDigest
 		}
 	}
 
@@ -641,7 +641,7 @@ func (yig *YigStorage) PutObject(bucketName string, objectName string, credentia
 			if err != nil {
 				return result, err
 			}
-		} else if err != ErrNoSuchKey {
+		} else if err != e.ErrNoSuchKey {
 			return result, err
 		}
 	}
@@ -674,14 +674,14 @@ func (yig *YigStorage) PutObjectMeta(bucket *meta.Bucket, targetObject *meta.Obj
 		break
 	default:
 		if bucket.OwnerId != credential.UserId {
-			return ErrBucketAccessForbidden
+			return e.ErrBucketAccessForbidden
 		}
 	}
 
 	err = yig.MetaStorage.UpdateObjectAttrs(targetObject)
 	if err != nil {
 		helper.Logger.Error("Update Object Attrs, sql fails:", err)
-		return ErrInternalError
+		return e.ErrInternalError
 	}
 
 	yig.MetaStorage.Cache.Remove(redis.ObjectTable, targetObject.BucketName+":"+targetObject.Name+":")
@@ -701,7 +701,7 @@ func (yig *YigStorage) RenameObject(targetObject *meta.Object, sourceObject stri
 		break
 	default:
 		if bucket.OwnerId != credential.UserId {
-			return result, ErrBucketAccessForbidden
+			return result, e.ErrBucketAccessForbidden
 		}
 	}
 
@@ -709,13 +709,13 @@ func (yig *YigStorage) RenameObject(targetObject *meta.Object, sourceObject stri
 		err = yig.MetaStorage.RenameObjectPart(targetObject, sourceObject)
 		if err != nil {
 			helper.Logger.Error("Update Object Attrs, sql fails:", err)
-			return result, ErrInternalError
+			return result, e.ErrInternalError
 		}
 	} else {
 		err = yig.MetaStorage.RenameObject(targetObject, sourceObject)
 		if err != nil {
 			helper.Logger.Error("Update Object Attrs, sql fails:", err)
-			return result, ErrInternalError
+			return result, e.ErrInternalError
 		}
 	}
 
@@ -747,7 +747,7 @@ func (yig *YigStorage) CopyObject(targetObject *meta.Object, sourceObject *meta.
 		break
 	default:
 		if bucket.OwnerId != credential.UserId {
-			return result, ErrBucketAccessForbidden
+			return result, e.ErrBucketAccessForbidden
 		}
 	}
 
@@ -757,7 +757,7 @@ func (yig *YigStorage) CopyObject(targetObject *meta.Object, sourceObject *meta.
 			err = yig.MetaStorage.UpdateGlacierObject(targetObject, sourceObject, true)
 			if err != nil {
 				helper.Logger.Error("Copy Object with same source and target with GLACIER object, sql fails:", err)
-				return result, ErrInternalError
+				return result, e.ErrInternalError
 			}
 			result.LastModified = targetObject.LastModifiedTime
 			if bucket.Versioning == "Enabled" {
@@ -770,7 +770,7 @@ func (yig *YigStorage) CopyObject(targetObject *meta.Object, sourceObject *meta.
 		err = yig.MetaStorage.ReplaceObjectMetas(targetObject)
 		if err != nil {
 			helper.Logger.Error("Copy Object with same source and target, sql fails:", err)
-			return result, ErrInternalError
+			return result, e.ErrInternalError
 		}
 		targetObject.LastModifiedTime = time.Now().UTC()
 		result.LastModified = targetObject.LastModifiedTime
@@ -826,7 +826,7 @@ func (yig *YigStorage) CopyObject(targetObject *meta.Object, sourceObject *meta.
 				}
 				if bytesW < uint64(part.Size) {
 					RecycleQueue <- maybeObjectToRecycle
-					return result, ErrIncompleteBody
+					return result, e.ErrIncompleteBody
 				}
 				if err != nil {
 					return result, err
@@ -834,11 +834,11 @@ func (yig *YigStorage) CopyObject(targetObject *meta.Object, sourceObject *meta.
 				calculatedMd5 := hex.EncodeToString(md5Writer.Sum(nil))
 				//we will only chack part etag,overall etag will be same if each part of etag is same
 				if calculatedMd5 != part.Etag {
-					err = ErrInternalError
+					err = e.ErrInternalError
 					RecycleQueue <- maybeObjectToRecycle
 					return result, err
 				}
-				part.LastModified = time.Now().UTC().Format(meta.CREATE_TIME_LAYOUT)
+				part.LastModified = time.Now().UTC().Format(helper.CONFIG.TimeFormat)
 				part.ObjectId = oid
 
 				part.InitializationVector = initializationVector
@@ -882,13 +882,13 @@ func (yig *YigStorage) CopyObject(targetObject *meta.Object, sourceObject *meta.
 		}
 		if int64(bytesWritten) < targetObject.Size {
 			RecycleQueue <- maybeObjectToRecycle
-			return result, ErrIncompleteBody
+			return result, e.ErrIncompleteBody
 		}
 
 		calculatedMd5 := hex.EncodeToString(md5Writer.Sum(nil))
 		if calculatedMd5 != targetObject.Etag {
 			RecycleQueue <- maybeObjectToRecycle
-			return result, ErrBadDigest
+			return result, e.ErrBadDigest
 		}
 		result.Md5 = calculatedMd5
 		targetObject.ObjectId = oid
@@ -977,7 +977,7 @@ func (yig *YigStorage) getObjWithVersion(bucketName, objectName, version string)
 func (yig *YigStorage) removeAllObjectsEntryByName(bucketName, objectName string) (err error) {
 
 	objs, err := yig.MetaStorage.GetAllObject(bucketName, objectName)
-	if err == ErrNoSuchKey {
+	if err == e.ErrNoSuchKey {
 		return nil
 	}
 	if err != nil {
@@ -993,7 +993,7 @@ func (yig *YigStorage) removeAllObjectsEntryByName(bucketName, objectName string
 						return err
 					}
 				}
-			} else if err != ErrNoSuchKey {
+			} else if err != e.ErrNoSuchKey {
 				return err
 			}
 		}
@@ -1018,7 +1018,7 @@ func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string)
 
 		var objMap *meta.ObjMap
 		objMap, err = yig.MetaStorage.GetObjectMap(bucketName, objectName)
-		if err == ErrNoSuchKey {
+		if err == e.ErrNoSuchKey {
 			err = nil
 			objMapExist = false
 		} else if err != nil {
@@ -1027,7 +1027,7 @@ func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string)
 		var object *meta.Object
 		if objMapExist {
 			object, err = yig.MetaStorage.GetObjectVersion(bucketName, objectName, objMap.NullVerId, false)
-			if err == ErrNoSuchKey {
+			if err == e.ErrNoSuchKey {
 				err = nil
 				objectExist = false
 			} else if err != nil {
@@ -1035,7 +1035,7 @@ func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string)
 			}
 		} else {
 			object, err = yig.MetaStorage.GetObject(bucketName, objectName, false)
-			if err == ErrNoSuchKey {
+			if err == e.ErrNoSuchKey {
 				err = nil
 				objectExist = false
 			} else if err != nil {
@@ -1070,7 +1070,7 @@ func (yig *YigStorage) checkOldObject(bucketName, objectName, versioning string)
 
 func (yig *YigStorage) removeObjectVersion(bucketName, objectName, version string) error {
 	object, err := yig.getObjWithVersion(bucketName, objectName, version)
-	if err == ErrNoSuchKey {
+	if err == e.ErrNoSuchKey {
 		return nil
 	}
 	if err != nil {
@@ -1139,14 +1139,14 @@ func (yig *YigStorage) DeleteObject(bucketName string, objectName string, versio
 		break
 	default:
 		if bucket.OwnerId != credential.UserId && credential.UserId != "" {
-			return result, ErrBucketAccessForbidden
+			return result, e.ErrBucketAccessForbidden
 		}
 	} // TODO policy and fancy ACL
 
 	switch bucket.Versioning {
 	case meta.VersionDisabled:
 		if version != "" && version != "null" {
-			return result, ErrNoSuchVersion
+			return result, e.ErrNoSuchVersion
 		}
 		err = yig.removeAllObjectsEntryByName(bucketName, objectName)
 		if err != nil {
@@ -1186,7 +1186,7 @@ func (yig *YigStorage) DeleteObject(bucketName string, objectName string, versio
 		}
 	default:
 		helper.Logger.Error("Invalid bucket versioning:", bucketName)
-		return result, ErrInternalError
+		return result, e.ErrInternalError
 	}
 
 	if err == nil {

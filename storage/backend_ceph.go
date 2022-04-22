@@ -3,20 +3,21 @@ package storage
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"io"
+	"sync"
+	"time"
+
 	"github.com/journeymidnight/yig/api/datatype"
 	"github.com/journeymidnight/yig/backend"
 	"github.com/journeymidnight/yig/ceph"
 	"github.com/journeymidnight/yig/crypto"
-	. "github.com/journeymidnight/yig/error"
+	e "github.com/journeymidnight/yig/error"
 	"github.com/journeymidnight/yig/helper"
 	"github.com/journeymidnight/yig/iam/common"
 	"github.com/journeymidnight/yig/meta"
 	"github.com/journeymidnight/yig/meta/types"
 	"github.com/journeymidnight/yig/redis"
 	"github.com/journeymidnight/yig/signature"
-	"io"
-	"sync"
-	"time"
 )
 
 func New(metaCacheType int, enableDataCache bool, kms crypto.KMS) *YigStorage {
@@ -81,7 +82,7 @@ func (yig *YigStorage) AppendObject(bucketName string, objectName string, creden
 		cephCluster, poolName = yig.pickClusterAndPool(bucketName, objectName, storageClass, size, true)
 		if cephCluster == nil || poolName != backend.BIG_FILE_POOLNAME {
 			helper.Logger.Warn("PickOneClusterAndPool error")
-			return result, ErrInternalError
+			return result, e.ErrInternalError
 		}
 		if len(encryptionKey) != 0 {
 			initializationVector, err = newInitializationVector()
@@ -105,13 +106,13 @@ func (yig *YigStorage) AppendObject(bucketName string, objectName string, creden
 	}
 
 	if int64(bytesWritten) < size {
-		return result, ErrIncompleteBody
+		return result, e.ErrIncompleteBody
 	}
 
 	calculatedMd5 := hex.EncodeToString(md5Writer.Sum(nil))
 	if userMd5, ok := metadata["md5Sum"]; ok {
 		if userMd5 != "" && userMd5 != calculatedMd5 {
-			return result, ErrBadDigest
+			return result, e.ErrBadDigest
 		}
 	}
 

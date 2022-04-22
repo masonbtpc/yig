@@ -5,18 +5,19 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"github.com/journeymidnight/yig/api/datatype"
-	"github.com/journeymidnight/yig/backend"
-	"github.com/journeymidnight/yig/circuitbreak"
-	"github.com/journeymidnight/yig/crypto"
-	. "github.com/journeymidnight/yig/error"
-	"github.com/journeymidnight/yig/helper"
-	"github.com/journeymidnight/yig/meta"
-	"github.com/journeymidnight/yig/redis"
 	"io"
 	"path"
 	"sync"
 	"time"
+
+	"github.com/journeymidnight/yig/api/datatype"
+	"github.com/journeymidnight/yig/backend"
+	"github.com/journeymidnight/yig/circuitbreak"
+	"github.com/journeymidnight/yig/crypto"
+	e "github.com/journeymidnight/yig/error"
+	"github.com/journeymidnight/yig/helper"
+	"github.com/journeymidnight/yig/meta"
+	"github.com/journeymidnight/yig/redis"
 )
 
 const (
@@ -78,10 +79,10 @@ func (yig *YigStorage) encryptionKeyFromSseRequest(sseRequest datatype.SseReques
 		return nil, nil, nil
 	// not implemented yet
 	case crypto.S3KMS.String():
-		return nil, nil, ErrNotImplemented
+		return nil, nil, e.ErrNotImplemented
 	case crypto.S3.String():
 		if yig.KMS == nil {
-			return nil, nil, ErrKMSNotConfigured
+			return nil, nil, e.ErrKMSNotConfigured
 		}
 		key, encKey, err := yig.KMS.GenerateKey(yig.KMS.GetKeyID(), crypto.Context{bucket: path.Join(bucket, object)})
 		if err != nil {
@@ -91,7 +92,7 @@ func (yig *YigStorage) encryptionKeyFromSseRequest(sseRequest datatype.SseReques
 	case crypto.SSEC.String():
 		return sseRequest.SseCustomerKey, nil, nil
 	default:
-		err = ErrInvalidSseHeader
+		err = e.ErrInvalidSseHeader
 		return
 	}
 }

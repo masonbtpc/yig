@@ -13,7 +13,7 @@ import (
 	"github.com/journeymidnight/yig/api"
 	"github.com/journeymidnight/yig/api/datatype"
 	"github.com/journeymidnight/yig/crypto"
-	. "github.com/journeymidnight/yig/error"
+	e "github.com/journeymidnight/yig/error"
 	"github.com/journeymidnight/yig/helper"
 	"github.com/journeymidnight/yig/iam"
 	"github.com/journeymidnight/yig/iam/common"
@@ -39,12 +39,12 @@ func (yig *YigStorage) ListMultipartUploads(credential common.Credential, bucket
 		break
 	case "authenticated-read":
 		if credential.UserId == "" {
-			err = ErrBucketAccessForbidden
+			err = e.ErrBucketAccessForbidden
 			return
 		}
 	default:
 		if bucket.OwnerId != credential.UserId {
-			err = ErrBucketAccessForbidden
+			err = e.ErrBucketAccessForbidden
 			return
 		}
 	}
@@ -95,7 +95,7 @@ func (yig *YigStorage) NewMultipartUpload(credential common.Credential, bucketNa
 		break
 	default:
 		if bucket.OwnerId != credential.UserId {
-			return "", ErrBucketAccessForbidden
+			return "", e.ErrBucketAccessForbidden
 		}
 	}
 	// TODO policy and fancy ACL
@@ -152,7 +152,7 @@ func (yig *YigStorage) PutObjectPart(bucketName, objectName string, credential c
 	}
 
 	if size > MAX_PART_SIZE {
-		err = ErrEntityTooLarge
+		err = e.ErrEntityTooLarge
 		return
 	}
 
@@ -162,14 +162,14 @@ func (yig *YigStorage) PutObjectPart(bucketName, objectName string, credential c
 		break
 	case crypto.SSEC.String():
 		if sseRequest.Type != crypto.SSEC.String() {
-			err = ErrInvalidSseHeader
+			err = e.ErrInvalidSseHeader
 			return
 		}
 		encryptionKey = sseRequest.SseCustomerKey
 	case crypto.S3.String():
 		encryptionKey = multipart.Metadata.EncryptionKey
 	case crypto.S3KMS.String():
-		err = ErrNotImplemented
+		err = e.ErrNotImplemented
 		return
 	}
 
@@ -207,14 +207,14 @@ func (yig *YigStorage) PutObjectPart(bucketName, objectName string, credential c
 	}
 	if int64(bytesWritten) < size {
 		RecycleQueue <- maybeObjectToRecycle
-		err = ErrIncompleteBody
+		err = e.ErrIncompleteBody
 		return
 	}
 
 	calculatedMd5 := hex.EncodeToString(md5Writer.Sum(nil))
 	if md5Hex != "" && md5Hex != calculatedMd5 {
 		RecycleQueue <- maybeObjectToRecycle
-		err = ErrBadDigest
+		err = e.ErrBadDigest
 		return
 	}
 
@@ -237,7 +237,7 @@ func (yig *YigStorage) PutObjectPart(bucketName, objectName string, credential c
 	default:
 		if bucket.OwnerId != credential.UserId {
 			RecycleQueue <- maybeObjectToRecycle
-			return result, ErrBucketAccessForbidden
+			return result, e.ErrBucketAccessForbidden
 		}
 	} // TODO policy and fancy ACL
 
@@ -246,7 +246,7 @@ func (yig *YigStorage) PutObjectPart(bucketName, objectName string, credential c
 		Size:                 size,
 		ObjectId:             objectId,
 		Etag:                 calculatedMd5,
-		LastModified:         time.Now().UTC().Format(meta.CREATE_TIME_LAYOUT),
+		LastModified:         time.Now().UTC().Format(helper.CONFIG.TimeFormat),
 		InitializationVector: initializationVector,
 	}
 	err = yig.MetaStorage.PutObjectPart(multipart, part)
@@ -281,7 +281,7 @@ func (yig *YigStorage) CopyObjectPart(bucketName, objectName, uploadId string, p
 	}
 
 	if size > MAX_PART_SIZE {
-		err = ErrEntityTooLarge
+		err = e.ErrEntityTooLarge
 		return
 	}
 
@@ -291,14 +291,14 @@ func (yig *YigStorage) CopyObjectPart(bucketName, objectName, uploadId string, p
 		break
 	case crypto.SSEC.String():
 		if sseRequest.Type != crypto.SSEC.String() {
-			err = ErrInvalidSseHeader
+			err = e.ErrInvalidSseHeader
 			return
 		}
 		encryptionKey = sseRequest.SseCustomerKey
 	case crypto.S3.String():
 		encryptionKey = multipart.Metadata.EncryptionKey
 	case crypto.S3KMS.String():
-		err = ErrNotImplemented
+		err = e.ErrNotImplemented
 		return
 	}
 
@@ -337,7 +337,7 @@ func (yig *YigStorage) CopyObjectPart(bucketName, objectName, uploadId string, p
 
 	if int64(bytesWritten) < size {
 		RecycleQueue <- maybeObjectToRecycle
-		err = ErrIncompleteBody
+		err = e.ErrIncompleteBody
 		return
 	}
 
@@ -354,7 +354,7 @@ func (yig *YigStorage) CopyObjectPart(bucketName, objectName, uploadId string, p
 	default:
 		if bucket.OwnerId != credential.UserId {
 			RecycleQueue <- maybeObjectToRecycle
-			err = ErrBucketAccessForbidden
+			err = e.ErrBucketAccessForbidden
 			return
 		}
 	} // TODO policy and fancy ACL
@@ -368,7 +368,7 @@ func (yig *YigStorage) CopyObjectPart(bucketName, objectName, uploadId string, p
 		Size:                 size,
 		ObjectId:             objectId,
 		Etag:                 result.Md5,
-		LastModified:         now.Format(meta.CREATE_TIME_LAYOUT),
+		LastModified:         now.Format(helper.CONFIG.TimeFormat),
 		InitializationVector: initializationVector,
 	}
 	result.LastModified = now
@@ -407,7 +407,7 @@ func (yig *YigStorage) ListObjectParts(credential common.Credential, bucketName,
 		break
 	case "authenticated-read":
 		if credential.UserId == "" {
-			err = ErrAccessDenied
+			err = e.ErrAccessDenied
 			return
 		}
 	case "bucket-owner-read", "bucket-owner-full-controll":
@@ -417,12 +417,12 @@ func (yig *YigStorage) ListObjectParts(credential common.Credential, bucketName,
 			return
 		}
 		if bucket.OwnerId != credential.UserId {
-			err = ErrAccessDenied
+			err = e.ErrAccessDenied
 			return
 		}
 	default:
 		if ownerId != credential.UserId {
-			err = ErrAccessDenied
+			err = e.ErrAccessDenied
 			return
 		}
 	}
@@ -487,7 +487,7 @@ func (yig *YigStorage) AbortMultipartUpload(credential common.Credential,
 		break
 	default:
 		if bucket.OwnerId != credential.UserId {
-			return ErrBucketAccessForbidden
+			return e.ErrBucketAccessForbidden
 		}
 	} // TODO policy and fancy ACL
 
@@ -527,7 +527,7 @@ func (yig *YigStorage) CompleteMultipartUpload(credential common.Credential, buc
 		break
 	default:
 		if bucket.OwnerId != credential.UserId {
-			err = ErrBucketAccessForbidden
+			err = e.ErrBucketAccessForbidden
 			return
 		}
 	}
@@ -545,14 +545,14 @@ func (yig *YigStorage) CompleteMultipartUpload(credential common.Credential, buc
 		if uploadedParts[i].PartNumber != i+1 {
 			helper.Logger.Error("uploadedParts[i].PartNumber != i+1; i:", i,
 				"uploadId:", uploadId)
-			err = ErrInvalidPart
+			err = e.ErrInvalidPart
 			return
 		}
 		part, ok := multipart.Parts[i+1]
 		if !ok {
 			helper.Logger.Error("multipart.Parts[i+1] does not exist; i:", i,
 				"uploadId:", uploadId)
-			err = ErrInvalidPart
+			err = e.ErrInvalidPart
 			return
 		}
 		if part.Size < api.MIN_PART_SIZE && part.PartNumber != len(uploadedParts) {
@@ -567,7 +567,7 @@ func (yig *YigStorage) CompleteMultipartUpload(credential common.Credential, buc
 			helper.Logger.Error("part.Etag != uploadedParts[i].ETag;",
 				"i:", i, "Etag:", part.Etag, "reqEtag:",
 				uploadedParts[i].ETag, "uploadId:", uploadId)
-			err = ErrInvalidPart
+			err = e.ErrInvalidPart
 			return
 		}
 		var etagBytes []byte
@@ -575,7 +575,7 @@ func (yig *YigStorage) CompleteMultipartUpload(credential common.Credential, buc
 		if err != nil {
 			helper.Logger.Error("hex.DecodeString(part.Etag) err:", err,
 				"uploadId:", uploadId)
-			err = ErrInvalidPart
+			err = e.ErrInvalidPart
 			return
 		}
 		part.Offset = totalSize
@@ -635,7 +635,7 @@ func (yig *YigStorage) CompleteMultipartUpload(credential common.Credential, buc
 			if err != nil {
 				return result, err
 			}
-		} else if err != ErrNoSuchKey {
+		} else if err != e.ErrNoSuchKey {
 			return result, err
 		}
 	}

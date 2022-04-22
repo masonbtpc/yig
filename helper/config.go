@@ -44,6 +44,7 @@ type Config struct {
 	ReservedOrigins        string `toml:"reserved_origins"` // www.ccc.com,www.bbb.com,127.0.0.1
 	MetaStore              string `toml:"meta_store"`
 	DBInfo                 string `toml:"db_info"`
+	TimeFormat             string `toml:"time_format"`
 	KeepAlive              bool   `toml:"keepalive"`
 	EnableCompression      bool   `toml:"enable_compression"`
 
@@ -129,6 +130,7 @@ func MarshalTOMLConfig() error {
 	CONFIG.CephConfigPattern = c.CephConfigPattern
 	CONFIG.ReservedOrigins = c.ReservedOrigins
 	CONFIG.DBInfo = c.DBInfo
+	CONFIG.TimeFormat = c.TimeFormat
 	CONFIG.KeepAlive = c.KeepAlive
 	CONFIG.EnableCompression = c.EnableCompression
 	CONFIG.InstanceId = Ternary(c.InstanceId == "",

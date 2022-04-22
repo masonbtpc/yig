@@ -21,7 +21,8 @@ reserved_origins = "s3.test.com,s3-internal.test.com"
 # Meta Config
 meta_cache_type = 0
 meta_store = "cockroachdb"
-db_info = "postgres://yig:Nthe8eez!@10.5.0.9:26257/yigdb"
+db_info = "postgres://yig:asdfads@10.5.0.17:26257/yigdb"
+time_format = "2006-01-02 15:04:05"
 keepalive = true
 enable_compression = false
 enable_usage_push = false

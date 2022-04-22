@@ -1,6 +1,6 @@
 package types
 
-import . "github.com/journeymidnight/yig/error"
+import e "github.com/journeymidnight/yig/error"
 
 type Status uint8
 
@@ -32,6 +32,6 @@ func MatchStatusIndex(status string) (Status, error) {
 	if index, ok := StatusStringMap[status]; ok {
 		return index, nil
 	} else {
-		return 0, ErrInvalidStatus
+		return 0, e.ErrInvalidStatus
 	}
 }
